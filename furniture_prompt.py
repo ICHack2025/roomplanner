@@ -1,7 +1,9 @@
 import anthropic
 
+api_key = input("Please enter your key: ")
+
 # Initialize the client
-client = anthropic.Anthropic(api_key="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")
+client = anthropic.Anthropic(api_key=api_key)
 
 userPrompt = """
 I’m thinking in the bedroom maybe a cozy platform bed with soft linen sheets, a couple of chunky wooden nightstands with warm bedside lamps, definitely a tall plant in the corner, some abstract art on the walls to keep things interesting, maybe a soft textured rug underfoot, and gotta have a reading nook with a comfy armchair and a little side table for coffee and books — oh, and blackout curtains for those glorious weekend sleep-ins.
