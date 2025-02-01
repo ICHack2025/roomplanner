@@ -69,19 +69,9 @@ const ThreeScene = () => {
       (object) => {
         object.traverse((child) => {
           if (child.isMesh) {
-            if (child.geometry instanceof THREE.Geometry) {
-              child.geometry = new THREE.BufferGeometry().fromGeometry(
-                child.geometry
-              );
-            }
-
-            // Apply material
-            child.material = material;
-
-            // Compute vertex normals if geometry is BufferGeometry
-            if (child.geometry instanceof THREE.BufferGeometry) {
-              child.geometry.computeVertexNormals(); // Smooth normals
-            }
+            
+            child.material = material; // Apply your material if needed
+            child.geometry.computeVertexNormals(); // If needed, to compute normals for lighting
           }
         });
         object.rotateX(-Math.PI / 2); // Rotate if necessary
