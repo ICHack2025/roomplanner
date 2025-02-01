@@ -69,7 +69,9 @@ const ThreeScene = () => {
       (object) => {
         object.traverse((child) => {
           if (child.isMesh) {
-            
+            if (child.geometry.attributes.uv === undefined) {
+              console.warn("NO UV!! NO UV!!NO UV!!NO UV!!NO UV!!NO UV!!")
+            }
             child.material = material; // Apply your material if needed
             child.geometry.computeVertexNormals(); // If needed, to compute normals for lighting
           }
