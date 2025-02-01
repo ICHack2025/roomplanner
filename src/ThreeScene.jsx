@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { PLYLoader } from "three/examples/jsm/loaders/PLYLoader";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { RGBELoader } from "three/examples/jsm/Addons.js";
+import { OBJLoader } from "three/examples/jsm/Addons.js";
 
 const hdrPath = "./sky.hdr";
-const plyPath = "./model.ply";
+const plyPath = "./reconstructed_mesh.obj";
 
 const ThreeScene = () => {
   const containerRef = useRef();
@@ -47,47 +47,53 @@ const ThreeScene = () => {
       }
     );
 
+    const textureLoader = new THREE.TextureLoader();
+    const texture = textureLoader.load("./texture.jpg", () => {
+      console.log("Texture loaded");
+    });
+
     const material = new THREE.MeshPhysicalMaterial({
-      color: 0xb2ffc8,
+      map: texture,
       metalness: 0,
       roughness: 0,
-      transparent: true,
-      transmission: 1.0,
+      transparent: false,
       side: THREE.DoubleSide,
       clearcoat: 1.0,
       clearcoatRoughness: 0.25,
+      flatShading: false,
     });
 
-    const loader = new PLYLoader();
-loader.load(
-  plyPath,
-  (geometry) => {
-    geometry.computeVertexNormals();
-    
-    // Check if the geometry has color attributes
-    if (geometry.hasAttribute("color")) {
-      const materialWithVertexColors = new THREE.MeshStandardMaterial({
-        vertexColors: true, // Enable vertex colors
-      });
+    const loader = new OBJLoader();
+    loader.load(
+      plyPath, // Use your .obj file path here
+      (object) => {
+        object.traverse((child) => {
+          if (child.isMesh) {
+            if (child.geometry instanceof THREE.Geometry) {
+              child.geometry = new THREE.BufferGeometry().fromGeometry(
+                child.geometry
+              );
+            }
 
-      const mesh = new THREE.Mesh(geometry, materialWithVertexColors);
-      mesh.rotateX(-Math.PI / 2);
-      scene.add(mesh);
-    } else {
-      // Fallback to your custom material if no colors are present
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.rotateX(-Math.PI / 2);
-      scene.add(mesh);
-    }
-  },
-  (xhr) => {
-    console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
-  },
-  (error) => {
-    console.error(error);
-  }
-);
+            // Apply material
+            child.material = material;
 
+            // Compute vertex normals if geometry is BufferGeometry
+            if (child.geometry instanceof THREE.BufferGeometry) {
+              child.geometry.computeVertexNormals(); // Smooth normals
+            }
+          }
+        });
+        object.rotateX(-Math.PI / 2); // Rotate if necessary
+        scene.add(object);
+      },
+      (xhr) => {
+        console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
 
     const stats = new Stats();
     containerRef.current.appendChild(stats.dom);
