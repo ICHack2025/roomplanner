@@ -1,9 +1,19 @@
 import ikea_api
 import requests
 from pygltflib import GLTF2
-import trimesh
-import os
 import base64
+
+
+def extract_base_color(glb_path):
+    gltf = GLTF2().load(glb_path)
+
+    colors = []
+    for material in gltf.materials:
+        if material.pbrMetallicRoughness:
+            pbr = material.pbrMetallicRoughness
+            if pbr.baseColorFactor:  # [R, G, B, A]
+                colors.append(tuple(pbr.baseColorFactor[:3]))  # Only RGB
+    return colors
 
 # Constants like country, language, base url
 constants = ikea_api.Constants(country="gb", language="en")
@@ -72,21 +82,24 @@ except Exception as e:
     print(f"Unexpected error: {e}")
 
 for i in range(len(model_urls)):
+    glb_file = f"{i}.glb"  # Replace with your file path
+    glb = GLTF2().load(glb_file)
 
-    # Load the GLB file
-    mesh = trimesh.load_mesh(f'{i}.glb')
+    # Extract texture data
+    for texture in glb.textures:
+        image_index = texture.source
+        image_data = glb.images[image_index].uri
 
-    # Get the textures from the GLB
-    textures = mesh.visual.material.textures
+        # If the image is embedded, decode it
+        if image_data.startswith("data:image"):
+            # Extract the base64 encoded image
+            base64_data = image_data.split(",")[1]
+            file_name = f"texture_{image_index}.png"
 
-    # Save textures as images (optional)
-    if textures:
-        for idx, texture in enumerate(textures):
-            # Extract and save texture as image
-            image = texture.image
-            image.save(f"texture_{idx}.png")
-            print(f"Saved texture_{idx}.png")
-    else:
-        print("No textures found.")
+            # Write the texture file
+            with open(file_name, "wb") as file:
+                file.write(base64.b64decode(base64_data))
+        else:
+            print(f"Image {image_index} is a URI: {image_data}")
 
 print(model_urls)
