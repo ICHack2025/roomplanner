@@ -23,7 +23,7 @@ const Home = () => {
                       Your <strong>personalized</strong> interior designing
                       assistant.
                     </p>
-                    <a href="/form" className="button is-large">
+                    <a href="/upload" className="button is-large">
                       <span className="icon">
                         {/* <FontAwesomeIcon icon={faRocket} /> */}
                       </span>

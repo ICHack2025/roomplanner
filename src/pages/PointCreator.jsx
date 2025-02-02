@@ -46,7 +46,15 @@ const PointCreator = () => {
         return newPoints;
       });
     }
+    setStage((stage) => stage + 1);
   };
+
+  useEffect(() => {
+    if (stage === 4) {
+      window.location.href =
+        "/real?cube=" + JSON.stringify([axisPoint, ...points]);
+    }
+  }, [points]);
 
   // Function to draw lines on the canvas
   const drawLines = () => {
@@ -65,8 +73,8 @@ const PointCreator = () => {
     // Draw lines from axis point to all placed points
     points.forEach((point) => {
       ctx.beginPath();
-      ctx.moveTo(axisPoint.x, axisPoint.y); // Start at the axis point
-      ctx.lineTo(point.x, point.y); // End at the placed point
+      ctx.moveTo(axisPoint.x + 10, axisPoint.y + 10); // Start at the axis point
+      ctx.lineTo(point.x + 10, point.y + 10); // End at the placed point
       ctx.stroke();
     });
   };
@@ -101,7 +109,6 @@ const PointCreator = () => {
           width: "100%",
           height: "100%",
           pointerEvents: "none", // Prevent image from blocking interaction
-          opacity: 0.5, // Adjust for visibility
         }}
       />
       <div
@@ -110,34 +117,15 @@ const PointCreator = () => {
           top: 0,
           left: 0,
           width: "100%",
-          height: "100%",
+          height: "auto",
           display: "flex",
           justifyContent: "center",
           padding: "3rem",
           color: "white",
+          backgroundColor: "black",
         }}
       >
         <h1>{getStageString(stage)}</h1>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-
-            if (stage === 4) {
-              window.location.href = "/real?cube=" + JSON.stringify([axisPoint, ...points]);
-            }
-            setStage((stage) => stage + 1);
-          }}
-          style={{
-            padding: "1rem",
-            height: "20px",
-            backgroundColor: "white",
-            color: "black",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          Next
-        </button>
       </div>
 
       {/* Canvas for drawing lines */}
@@ -176,7 +164,7 @@ const PointCreator = () => {
             width: "20px",
             height: "20px",
             borderRadius: "50%",
-            backgroundColor: "rgba(255, 0, 0, 0.7)", // Placed points color
+            backgroundColor: "rgb(255, 0, 0)", // Placed points color
           }}
         />
       ))}
