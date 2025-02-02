@@ -26,72 +26,72 @@ def parse_search_prompts(text):
 
     return item_dict
 
-def generate_queries(user_prompt):
-    client = anthropic.Anthropic(api_key="")
+# def generate_queries(user_prompt):
+#     client = anthropic.Anthropic(api_key="")
 
 
-    # Prepare the assistant prompt
-    system_prompt = "You are an expert assistant who provides clear, concise answers."
-    assistant_prompt = f"""
-    {user_prompt}
+#     # Prepare the assistant prompt
+#     system_prompt = "You are an expert assistant who provides clear, concise answers."
+#     assistant_prompt = f"""
+#     {user_prompt}
     
-    You are tasked with creating search prompts for the text above as if searching on the IKEA website. The goal is to create search prompts for the items that the user has described, and these prompts should return relevant results directly on the IKEA website's search page.
+#     You are tasked with creating search prompts for the text above as if searching on the IKEA website. The goal is to create search prompts for the items that the user has described, and these prompts should return relevant results directly on the IKEA website's search page.
 
 
-    Guidelines for creating search prompts:
-    - Use descriptive terms associated with the items the user wants.
-    - Include the item type and its function.
-    - Consider materials or finishes common in the decor described.
-    - Keep the prompts concise but specific.
+#     Guidelines for creating search prompts:
+#     - Use descriptive terms associated with the items the user wants.
+#     - Include the item type and its function.
+#     - Consider materials or finishes common in the decor described.
+#     - Keep the prompts concise but specific.
     
-    The items to search for are:
-    <items>
-    {{items}}
-    </items>
+#     The items to search for are:
+#     <items>
+#     {{items}}
+#     </items>
     
-    For each item listed above, generate a search prompt that would be suitable for finding the items the user mentioned on the IKEA website. Be creative in combining the elements the user mentioned with IKEA's typical style.
+#     For each item listed above, generate a search prompt that would be suitable for finding the items the user mentioned on the IKEA website. Be creative in combining the elements the user mentioned with IKEA's typical style.
     
-    For each item listed above, you are also given 3 locations in a room in which you can place these items: adjacent to the left wall (left), adjacent to the right wall (right), or in the corner of the room (corner). You are an incredible interior designer with the highest credentials in the field, and you will pick locations that make sense and are comfortable to live in.
-    basically, for each item you are also to return <location> which can be one of the three: (left/right/corner) 
+#     For each item listed above, you are also given 3 locations in a room in which you can place these items: adjacent to the left wall (left), adjacent to the right wall (right), or in the corner of the room (corner). You are an incredible interior designer with the highest credentials in the field, and you will pick locations that make sense and are comfortable to live in.
+#     basically, for each item you are also to return <location> which can be one of the three: (left/right/corner) 
 
-    For each item listed above, generate a search prompt **without any additional explanation**. Follow this format exactly:
-    <search_prompts>
-    [Item 1]: [Location for item 1 (left/right/corner)]: [Search prompt for Item 1]
-    [Item 2]: [Location for item 2 (left/right/corner)]: [Search prompt for Item 2]
-    [Item 3]: [Location for item 3 (left/right/corner)]: [Search prompt for Item 3]
-    </search_prompts>
+#     For each item listed above, generate a search prompt **without any additional explanation**. Follow this format exactly:
+#     <search_prompts>
+#     [Item 1]: [Location for item 1 (left/right/corner)]: [Search prompt for Item 1]
+#     [Item 2]: [Location for item 2 (left/right/corner)]: [Search prompt for Item 2]
+#     [Item 3]: [Location for item 3 (left/right/corner)]: [Search prompt for Item 3]
+#     </search_prompts>
     
-    Just list the items and their search prompts, nothing more. Ensure the prompts are specific enough that they would return the correct results on the IKEA website.
-    """
-    message = client.messages.create(
-        model="claude-3-5-sonnet-20241022",
-        max_tokens=1000,
-        temperature=0,
-        system=system_prompt,
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": assistant_prompt
-                    }
-                ]
-            }
-        ]
-    )
-    '''
-    response = client.messages.create(
-        model="claude-3-5-sonnet-20241022",  # Ensure the model name is accurate
-        max_tokens_to_sample=1024,
-        prompt=f"{anthropic.HUMAN_PROMPT}{system_prompt}{anthropic.HUMAN_PROMPT}{assistant_prompt}{anthropic.AI_PROMPT}"
-    )
-    '''
+#     Just list the items and their search prompts, nothing more. Ensure the prompts are specific enough that they would return the correct results on the IKEA website.
+#     """
+#     message = client.messages.create(
+#         model="claude-3-5-sonnet-20241022",
+#         max_tokens=1000,
+#         temperature=0,
+#         system=system_prompt,
+#         messages=[
+#             {
+#                 "role": "user",
+#                 "content": [
+#                     {
+#                         "type": "text",
+#                         "text": assistant_prompt
+#                     }
+#                 ]
+#             }
+#         ]
+#     )
+#     '''
+#     response = client.messages.create(
+#         model="claude-3-5-sonnet-20241022",  # Ensure the model name is accurate
+#         max_tokens_to_sample=1024,
+#         prompt=f"{anthropic.HUMAN_PROMPT}{system_prompt}{anthropic.HUMAN_PROMPT}{assistant_prompt}{anthropic.AI_PROMPT}"
+#     )
+#     '''
 
-    # Parse the input text
-    item_search_dict = parse_search_prompts(extract_text_from_textblock(message.content))
+#     # Parse the input text
+#     item_search_dict = parse_search_prompts(extract_text_from_textblock(message.content))
 
-    return item_search_dict
+#     return item_search_dict
 
 
 if __name__ == '__main__':

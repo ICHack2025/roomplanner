@@ -10,7 +10,7 @@ import model
 
 # search_queries = furniture_prompt.generate_queries(user_prompt)
 def search_model():
-    search_queries = {'Platform bed': (' corner', 'wooden platform bed frame queen'), 'Linen sheets': (' corner', 'white linen duvet cover set'), 'Wooden nightstands': (' left', 'solid wood bedside table'), 'Bedside lamps': (' left', 'warm table lamp wooden base'), 'Tall plant': (' corner', 'artificial floor plant with pot'), 'Abstract art': (' right', 'abstract wall art prints'), 'Textured rug': (' corner', 'plush bedroom area rug neutral'), 'Armchair': (' right', 'upholstered reading chair'), 'Side table': (' right', 'small round coffee table'), 'Blackout curtains': (' right', 'blackout curtain panels gray')}
+    search_queries = {'Table': ('corner', 'black table')}
     # TODO: LINK TOGETHER
     
     results = {}
@@ -20,8 +20,8 @@ def search_model():
         for result in search_results:
             item_id = iah.get_item_model(result)
             colors = iah.get_item_colors(result)
-            model_filename = model.find_model(item_id, list(colors.values()))
-            results[key] = model_filename
+            model_url = model.find_model(item_id, list(colors.values()))
+            results[key] = model_url
 
     print(results)
     print("Done")

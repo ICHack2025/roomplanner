@@ -12,7 +12,7 @@ def ikea_search_items(query):
     # Search endpoint with prepared data
     endpoint = search.search(
         query=query,
-        limit=1,
+        limit=2,
         types=["PRODUCT"]
     )
     response = ikea_api.run(endpoint)

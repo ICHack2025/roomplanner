@@ -36,8 +36,10 @@ def get_models_from_prompts(search_queries):
         for result in search_results:
             item_id = iah.get_item_model(result)
             colors = iah.get_item_colors(result)
-            model_filename = model.find_model(item_id, list(colors.values()))
-            results[key] = model_filename
+            model_url = model.find_model(item_id, list(colors.values()))
+            results[key] = model_url
+            if model_url != None:
+                break
     return results
 
 def extract_text_from_textblock(text_block):
@@ -75,10 +77,8 @@ def generate_queries(user_prompt):
     You are tasked with creating search prompts for the text above as if searching on the IKEA website. The goal is to create search prompts for the items that the user has described, and these prompts should return relevant results directly on the IKEA website's search page.
     
     Guidelines for creating search prompts:
-    - Use descriptive terms associated with the items the user wants.
-    - Include the item type and its function.
-    - Consider materials or finishes common in the decor described.
-    - Keep the prompts concise but specific.
+    - Use a MAXIMUM of 1 adjective, and it must be a suitable color.
+    - Include the furniture name.
     
     The items to search for are:
     <items>
