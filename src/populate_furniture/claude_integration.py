@@ -1,8 +1,9 @@
-from flask import Flask, request, jsonify, send_file, CORS
+from flask import Flask, request, jsonify, send_file
 import anthropic
 import ikea_api_helper as iah
 import model
 import os
+from flask_cors import CORS
 
 
 app = Flask(__name__)
