@@ -4,6 +4,10 @@ import * as THREE from "three";
 import { DRACOLoader } from "three/examples/jsm/Addons.js";
 import { GLTFLoader } from "three/examples/jsm/Addons.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
+import { EffectComposer } from "three/examples/jsm/Addons.js";
+import { RenderPass } from "three/examples/jsm/Addons.js";
+import { UnrealBloomPass } from "three/examples/jsm/Addons.js";
+import { SSAOPass } from "three/examples/jsm/Addons.js";
 
 const Location = Object.freeze({
   left: "left",
@@ -11,7 +15,7 @@ const Location = Object.freeze({
   corner: "corner",
 });
 
-const ThreeScene = ({modelsStuff}) => {
+const ThreeScene = ({ modelsStuff }) => {
   const containerRef = useRef(null);
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
@@ -22,19 +26,28 @@ const ThreeScene = ({modelsStuff}) => {
     const scene = new THREE.Scene();
     // scene.add(new THREE.AxesHelper(5));
 
-    // const light = new THREE.AmbientLight(0xffffff, 0.5);
+    // const light = new THREE.AmbientLight(0xffffff, 1);
     // scene.add(light);
 
     // add directional sunlight with shadowcasts
 
-    const light2 = new THREE.PointLight(0xffffff, 10000);
-    light2.position.set(0, 0, 0);
-    light2.castShadow = true;
-    light2.shadow.mapSize.width = 2048;
-    light2.shadow.mapSize.height = 2048;
-    light2.shadow.camera.near = 0.5;
-    light2.shadow.camera.far = 500;
-    scene.add(light2);
+    for (var i = 0; i < 2; i++) {
+      for (var j = 0; j < 2; j++) {
+        const light = new THREE.PointLight(0xffffff, 1500);
+        light.position.set(i * 10, 30, j * 10);
+        light.castShadow = true;
+        light.shadow.mapSize.width = 2048;
+        light.shadow.mapSize.height = 2048;
+        light.shadow.camera.near = 0.5;
+        light.shadow.camera.far = 500;
+        light.shadow.bias = -0.005; // Reduce shadow bias to prevent shadow acne
+        light.shadow.radius = 5;
+        light.shadow.intensity = 0.4;
+        scene.add(light);
+      }
+    }
+
+    // Draw lightcamera
 
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -67,23 +80,23 @@ const ThreeScene = ({modelsStuff}) => {
     );
 
     // Draw the three vectors in the world:
-    const material1 = new THREE.LineBasicMaterial({
-      color: 0xff0000,
-      linewidth: 10,
-    });
-    const geometry1 = new THREE.BufferGeometry().setFromPoints([v0, v1]);
-    const line1 = new THREE.Line(geometry1, material1);
-    scene.add(line1);
+    // const material1 = new THREE.LineBasicMaterial({
+    //   color: 0xff0000,
+    //   linewidth: 10,
+    // });
+    // const geometry1 = new THREE.BufferGeometry().setFromPoints([v0, v1]);
+    // const line1 = new THREE.Line(geometry1, material1);
+    // scene.add(line1);
 
-    const material2 = new THREE.LineBasicMaterial({ color: 0x00ff00 });
-    const geometry2 = new THREE.BufferGeometry().setFromPoints([v0, v2]);
-    const line2 = new THREE.Line(geometry2, material2);
-    scene.add(line2);
+    // const material2 = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+    // const geometry2 = new THREE.BufferGeometry().setFromPoints([v0, v2]);
+    // const line2 = new THREE.Line(geometry2, material2);
+    // scene.add(line2);
 
-    const material3 = new THREE.LineBasicMaterial({ color: 0x0000ff });
-    const geometry3 = new THREE.BufferGeometry().setFromPoints([v0, v3]);
-    const line3 = new THREE.Line(geometry3, material3);
-    scene.add(line3);
+    // const material3 = new THREE.LineBasicMaterial({ color: 0x0000ff });
+    // const geometry3 = new THREE.BufferGeometry().setFromPoints([v0, v3]);
+    // const line3 = new THREE.Line(geometry3, material3);
+    // scene.add(line3);
 
     // Construct the rotation matrix R from v1, v2, v3
     const R = new THREE.Matrix3();
@@ -98,13 +111,13 @@ const ThreeScene = ({modelsStuff}) => {
     );
     const angleZ = Math.atan2(R.elements[3], R.elements[0]); // Rotation around Z-axis (roll)
 
-    const renderer = new THREE.WebGLRenderer();
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth * 0.75, window.innerHeight);
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Optional for softer shadows
-    
 
     // Orbit  Control
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -157,8 +170,8 @@ const ThreeScene = ({modelsStuff}) => {
     });
 
     cubeGroup.position.set(cube[0].x / 2 / 10 + 10, 27, 0);
-    cubeGroup.rotateX(angleX - 0.70);
-    cubeGroup.rotateY(-angleY-0.05);
+    cubeGroup.rotateX(angleX - 0.7);
+    cubeGroup.rotateY(-angleY - 0.05);
     cubeGroup.rotateZ(angleZ);
     cubeGroup.receiveShadow = true;
 
@@ -187,85 +200,93 @@ const ThreeScene = ({modelsStuff}) => {
     function placeObject(location, path) {
       console.log(path);
       fetch("http://localhost:5000/download", {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ filename: path }),
-      }).then((response) => {
-        if (response.ok) {
-          return response.arrayBuffer();
-        }
-        throw new Error('Network response was not ok');
       })
-      .then(data => {
-        gltfloader.parse(data, "", (gltf) => {
-          const model = gltf.scene;
-          model.scale.set(30, 30, 30);
-  
-          const size = new THREE.Vector3();
-          const bbox = new THREE.Box3().setFromObject(model);
-          bbox.getSize(size);
-  
-          //clone cubes position to work with it
-          let basePos = new THREE.Vector3();
-          cubeGroup.getWorldPosition(basePos);
-  
-          // compute rotation correctly
-          let baseRot = new THREE.Euler();
-          baseRot.copy(cubeGroup.rotation);
-  
-          //adjust position based on location
-          let offset = new THREE.Vector3();
-  
-          //adjust position to the floor.
-          offset.set(-planeSize / 2, 0, 0);
-  
-          //add specific position
-          switch (location) {
-            case Location.right:
-              offset.add(
-                new THREE.Vector3(
-                  0,
-                  planeSize / 2 - size.x / 2,
-                  -planeSize / 2 + size.z / 2
-                )
-              );
-              break;
-            case Location.left:
-              offset.add(
-                new THREE.Vector3(0, planeSize / 2 - size.x / 2, planeSize / 4)
-              );
-              break;
-            case Location.corner:
-              offset.add(
-                new THREE.Vector3(0, -planeSize / 4, -planeSize / 2 + size.z / 2)
-              );
+        .then((response) => {
+          if (response.ok) {
+            return response.arrayBuffer();
           }
-  
-          //transform the position using cubeGroups world matrix
-          offset.applyMatrix4(cubeGroup.matrixWorld);
-  
-          //set position and rotation
-          model.position.copy(offset);
-          model.setRotationFromEuler(baseRot);
-          model.rotateZ(-Math.PI / 2);
-  
-          model.castShadow = true;
-          model.receiveShadow = true;
-          model.traverse((child) => {
-            if (child.isMesh) {
-              child.castShadow = true;
-              child.receiveShadow = true;
+          throw new Error("Network response was not ok");
+        })
+        .then((data) => {
+          gltfloader.parse(data, "", (gltf) => {
+            const model = gltf.scene;
+            model.scale.set(30, 30, 30);
+
+            const size = new THREE.Vector3();
+            const bbox = new THREE.Box3().setFromObject(model);
+            bbox.getSize(size);
+
+            //clone cubes position to work with it
+            let basePos = new THREE.Vector3();
+            cubeGroup.getWorldPosition(basePos);
+
+            // compute rotation correctly
+            let baseRot = new THREE.Euler();
+            baseRot.copy(cubeGroup.rotation);
+
+            //adjust position based on location
+            let offset = new THREE.Vector3();
+
+            //adjust position to the floor.
+            offset.set(-planeSize / 2, 0, 0);
+
+            //add specific position
+            switch (location) {
+              case Location.right:
+                offset.add(
+                  new THREE.Vector3(
+                    0,
+                    planeSize / 2 - size.x / 2,
+                    -planeSize / 2 + size.z / 2
+                  )
+                );
+                break;
+              case Location.left:
+                offset.add(
+                  new THREE.Vector3(
+                    0,
+                    planeSize / 2 - size.x / 2,
+                    planeSize / 4
+                  )
+                );
+                break;
+              case Location.corner:
+                offset.add(
+                  new THREE.Vector3(
+                    0,
+                    -planeSize / 4,
+                    -planeSize / 2 + size.z / 2
+                  )
+                );
             }
+
+            //transform the position using cubeGroups world matrix
+            offset.applyMatrix4(cubeGroup.matrixWorld);
+
+            //set position and rotation
+            model.position.copy(offset);
+            model.setRotationFromEuler(baseRot);
+            model.rotateZ(-Math.PI / 2);
+
+            model.castShadow = true;
+            model.receiveShadow = true;
+            model.traverse((child) => {
+              if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+              }
+            });
+            scene.add(model);
           });
-          scene.add(model);
+        })
+        .catch((error) => {
+          console.error("Error loading the model:", error);
         });
-      })
-      .catch(error => {
-        console.error('Error loading the model:', error);
-      });
-      
     }
 
     for (let i = 0; i < Object.values(modelsStuff).length; i++) {
@@ -278,12 +299,25 @@ const ThreeScene = ({modelsStuff}) => {
       placeObject(loc, Object.values(modelsStuff)[i][1]);
     }
 
+    const composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth * 0.75, window.innerHeight),
+      0.1, // Strength of the bloom effect
+      0.2, // Bloom radius
+      0.85 // Bloom threshold
+    );
+    composer.addPass(bloomPass);
+
     // Animation loop
     const animate = () => {
       requestAnimationFrame(animate);
       stats.update();
-      controls.update();
+      // controls.update();
       renderer.render(scene, camera);
+      composer.render();
     };
     animate();
 
