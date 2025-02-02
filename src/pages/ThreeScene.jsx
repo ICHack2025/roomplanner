@@ -182,24 +182,45 @@ const ThreeScene = () => {
         const model = gltf.scene;
         model.scale.set(10, 10, 10);
 
+        const size = new THREE.Vector3();
         const bbox = new THREE.Box3().setFromObject(model);
-        let size = new THREE.Vector3();
-        bbox.getSize(size);
+        bbox.getSize(size)
 
-        var pos = cubeGroup.position;
-        var rot = cubeGroup.rotation;
-        var xpos = pos.x - planeSize / 4;
-        var ypos = pos.y - planeSize / 2;
-        var zpos = pos.z - planeSize / 2;
+        //clone cubes position to work with it
+        let basePos = new THREE.Vector3();
+        cubeGroup.getWorldPosition(basePos);
+
+        // compute rotation correctly
+        let baseRot = new THREE.Euler();
+        baseRot.copy(cubeGroup.rotation)
+
+        //adjust position based on location
+        let offset = new THREE.Vector3();
+
+        //adjust position to the floor.
+        offset.set(-planeSize/2, 0, 0)
+        
+        //add specific position
+        switch (location) {
+          case Location.rightWall:
+            offset.add(new THREE.Vector3(0, planeSize/2 - size.x/2 , -planeSize/2 + size.z/2));
+            break;
+          case Location.leftWall:
+            offset.add(new THREE.Vector3(0, planeSize/2 - size.x/2 , 0));
+            break;
+          case Location.corner:
+            offset.add(new THREE.Vector3(0, 0, -planeSize/2 + size.z/2));
+        }
         
 
-        pos.x += size.x / 2;
-        pos.y += size.y / 2;
-        pos.z += size.z / 2;
+        //transform the position using cubeGroups world matrix
+        offset.applyMatrix4(cubeGroup.matrixWorld)
 
-        model.position.set(xpos, ypos, zpos);
-        model.rotation.set(rot.x, rot.y, rot.z);
+        //set position and rotation
+        model.position.copy(offset)
+        model.setRotationFromEuler(baseRot)
         model.rotateZ(-Math.PI / 2);
+        
 
         scene.add(model);
       });
