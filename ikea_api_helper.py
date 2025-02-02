@@ -41,11 +41,15 @@ def get_item_model(item):
         endpoint = rotera_item.get_item(pot_id)
         try:
             response = ikea_api.run(endpoint)
-            model_urls = []
-            for item in response.get("models"):
-                model_urls.append(item.get("url"))
-            return model_urls
+            return pot_id
         except:
             continue
-    return []
+    return None
+
+def get_item_colors(item):
+    colors = {}
+    item_clrs = item.get("product").get("colors")
+    for color in item_clrs:
+        colors[color.get("name")] = color.get("hex")
+    return colors
 
