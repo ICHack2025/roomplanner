@@ -26,15 +26,6 @@ const ThreeScene = () => {
     // scene.add(light);
 
     // add directional sunlight with shadowcasts
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(0, 0, 10);
-    light.rotation.set(0, 0, 10);
-    light.castShadow = true;
-    light.shadow.mapSize.width = 2048;
-    light.shadow.mapSize.height = 2048;
-    light.shadow.camera.near = 0.5;
-    light.shadow.camera.far = 500;
-    scene.add(light);
 
     const light2 = new THREE.PointLight(0xffffff, 10000);
     light2.position.set(0, 0, 0);
@@ -113,7 +104,7 @@ const ThreeScene = () => {
     rendererRef.current = renderer;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Optional for softer shadows
-
+    
 
     // Orbit  Control
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -126,9 +117,11 @@ const ThreeScene = () => {
 
     const textureLoader = new THREE.TextureLoader();
     const texture = textureLoader.load("texture.jpg");
-
-    scene.environment = texture;
     scene.background = texture;
+    scene.environment = texture;
+
+    // scene.environment = texture;
+    // scene.background = texture;
 
     const faceSize = 1; // Size of each face
     const planeSize = 100;
@@ -263,9 +256,6 @@ const ThreeScene = () => {
     placeObject(Location.leftWall, "./somethingIkea.glb");
     placeObject(Location.corner, "./somethingIkea.glb");
 
-    const helper = new THREE.CameraHelper(light2.shadow.camera);
-    scene.add(helper);
-
     // Animation loop
     const animate = () => {
       requestAnimationFrame(animate);
@@ -277,7 +267,7 @@ const ThreeScene = () => {
 
     // Handle window resizing
     const onResize = () => {
-      const width = window.innerWidth;
+      const width = window.innerWidth * 0.75;
       const height = window.innerHeight;
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
@@ -293,7 +283,7 @@ const ThreeScene = () => {
     };
   }, []);
 
-  return <div ref={containerRef} style={{ width: "100%", height: "100vh" }} />;
+  return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
 };
 
 export default ThreeScene;

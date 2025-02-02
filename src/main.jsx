@@ -6,6 +6,7 @@ import { BrowserRouter, Route, Routes } from "react-router";
 import PointCreator from "./pages/PointCreator";
 import ThreeScene from "./pages/ThreeScene";
 import Home from "./pages/Home";
+import MainScene from "./pages/MainScene";
 
 createRoot(document.getElementById("root")).render(
     <DndProvider backend={HTML5Backend}>
@@ -13,7 +14,7 @@ createRoot(document.getElementById("root")).render(
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/create_points" element={<PointCreator />} />
-          <Route path="/real" element={<ThreeScene />} />
+          <Route path="/real" element={<MainScene />} />
         </Routes>
       </BrowserRouter>
     </DndProvider>
