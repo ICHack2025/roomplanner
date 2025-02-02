@@ -3,8 +3,10 @@ import requests
 import os
 import base64
 import zipfile
-# import cv2
+import cv2
 import numpy
+from colorthief import ColorThief
+
 
 # Constants like country, language, base url
 constants = ikea_api.Constants(country="gb", language="en")
@@ -41,18 +43,19 @@ try:
     # Attempt to find the 3D model URL in response
     print(response)
     model_urls = []
-    for item in response.get("models"):
-        cur_url = item.get("url")
-        if ".usdz" in cur_url:
-            model_urls.append(item.get("url"))
     for variation in response.get("variations"):
         for item in variation.get("models"):
             cur_url = item.get("url")
             if ".usdz" in cur_url:
                 model_urls.append(item.get("url"))
-    print(model_urls[0])
+    # print(model_urls[0])
+
+
+    models_and_colors = []
+
+
     for i, model_url in enumerate(model_urls):
-        print(f"3D Model Found: {model_url}")
+        print(f"\n3D Model Found: {model_url}")
 
         # Download the model
         model_response = requests.get(model_url)
@@ -62,7 +65,7 @@ try:
                                    f"")  # Adjust file format if needed
             with open(model_filename_usdz, "wb") as file:
                 file.write(model_response.content)
-            print(f"3D model saved as: {model_filename_usdz}")
+            print(f"\n3D model saved as: {model_filename_usdz}")
 
             
             model_filename_zip = (f"{i}.zip"
@@ -78,34 +81,40 @@ try:
                 # Iterate through the filenames in the ZIP archive
                 found_files = [file_name for file_name in zip_ref.namelist() if search_text.lower() in file_name.lower()]
                 
-                if found_files:
+                if found_files: # Find texture with basecolor in name
                     print(f"Files containing '{search_text}':")
                     for file in found_files:
                         zip_ref.extract(file, "output_textures")
                         print(file)
+
+                        file_path = (f"output_textures/{file}")
+
+                        color_thief = ColorThief(file_path)
+                        dominant_color = color_thief.get_color(quality=1)
+
+                        # Dominant color of the image!
+                        models_and_colors.append( (model_filename_usdz, dominant_color) )
+
+                        # print(dominant_color)
+                
                 else:
                     print(f"No files found containing '{search_text}' in their filename.")
 
             
 
-            print(f"3D model saved as: {model_filename_zip}")
+            # print(f"3D model saved as: {model_filename_zip}")
             os.remove(model_filename_zip)
-            print("delete zip")
-
-
-            # myimg = cv2.imread('image.jpg')
-            # avg_color_per_row = numpy.average(myimg, axis=0)
-            # avg_color = numpy.average(avg_color_per_row, axis=0)
-            # print(avg_color)
-
-
-            print("\n\n")
+            # print("delete zip")
+            # print("\n\n")
 
         else:
             print(f"Failed to download 3D model. HTTP Status: {model_response.status_code}")
 
     else:
-        print("No 3D model URL found in response.")
+        print("\nNo 3D model URL found in response.")
+
+    print(models_and_colors)
+
 
 except Exception as e:
     print(f"Unexpected error: {e}")
