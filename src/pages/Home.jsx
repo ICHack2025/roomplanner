@@ -1,6 +1,9 @@
 import "./../style/home.scss";
 
 const Home = () => {
+  const handleFileChange = (event) => {
+    window.location.href = "/create_points";
+  }
   return (
     <>
       <div className="home-styling">
@@ -23,12 +26,9 @@ const Home = () => {
                       Your <strong>personalized</strong> interior designing
                       assistant.
                     </p>
-                    <a href="/upload" className="button is-large">
-                      <span className="icon">
-                        {/* <FontAwesomeIcon icon={faRocket} /> */}
-                      </span>
-                      <span>Design your Interior</span>
-                    </a>
+                    {/* upload button */}
+                    <input type="file" accept="image/" onChange={handleFileChange}/>
+                    
                   </div>
                 </div>
               </div>
