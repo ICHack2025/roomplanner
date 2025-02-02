@@ -23,6 +23,7 @@ def chat():
         # Send the message to Claude
         search_queries = generate_queries(user_prompt)
         models = get_models_from_prompts(search_queries)
+        models["\\conversation"] = generate_conversation(user_prompt)
 
         # Return the response as JSON
         return jsonify(models)
@@ -31,18 +32,25 @@ def chat():
         return jsonify({"error": str(e)}), 500
     
 
-@app.route('/download/<filename>', methods=['GET'])
-def download_file(filename):
-    # file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    if os.path.exists(filename):
+from flask import request
+
+@app.route('/download', methods=['POST'])
+def download_file():
+    # Get the filename from the request body (assuming it's sent as JSON or form data)
+    data = request.get_json()  # or request.form for form data
+    print(data)
+    filename = data.get('filename')
+
+    if filename and os.path.exists(filename):
         return send_file(filename, as_attachment=True)
     else:
         return jsonify({"error": "File not found"}), 404
 
 
+
 def get_models_from_prompts(search_queries):
     results = {}
-    for key, position, query in search_queries.items():
+    for key, (position, query) in search_queries.items():
         search_results = iah.ikea_search_items(query)
         for result in search_results:
             item_id = iah.get_item_model(result)
@@ -133,6 +141,30 @@ def generate_queries(user_prompt):
     return item_search_dict
 
 
+def generate_conversation(user_prompt):
+    client = anthropic.Anthropic(api_key = "")
+    system_prompt = "You are a virtual assistant that gathers user feedback on furniture organization in using our app."
+    assistant_prompt = f"""
+    Given the user's response, '{user_prompt}', ask the user whether the furniture arrangement is what they have envisioned.
+    """
+    message = client.messages.create(
+        model="claude-3-5-sonnet-20241022",
+        max_tokens=1000,
+        temperature=0,
+        system=system_prompt,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": assistant_prompt
+                    }
+                ]
+            }
+        ]
+    )
+    return message.content[0].text
 
 if __name__ == '__main__':
     app.run(debug=True)

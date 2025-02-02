@@ -4,10 +4,15 @@ import ThreeScene from "./ThreeScene";
 const MainScene = () => {
   const [messages, setMessages] = useState([]);
   const [models, setModels] = useState({
-    chair:
-      "https://web-api.ikea.com/dimma/assets/1.2/90503285/PS01_S01_NV01/rqp3/glb/90503285_PS01_S01_NV01_RQP3_3.0_4f3c38313d63daded1667b4466e0c0ec.glb",
-    desk: "https://web-api.ikea.com/dimma/assets/1.2/80354276/PS01_S01_NV01/rqp3/glb/80354276_PS01_S01_NV01_RQP3_3.0_0f6194297ea644d59a905d19e949764c.glb",
-  });
+    "chair": [
+        " right",
+        "90503285_PS01_S01_NV01_RQP3_3.0_4f3c38313d63daded1667b4466e0c0ec.glb"
+    ],
+    "desk": [
+        " corner",
+        "80354276_PS01_S01_NV01_RQP3_3.0_0f6194297ea644d59a905d19e949764c.glb"
+    ]
+});
   const [input, setInput] = useState("");
 
   // Function to handle sending a message
@@ -24,7 +29,7 @@ const MainScene = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
+          "Accept": "application/json",
         },
         body: JSON.stringify({ message: input }),
       });
@@ -36,10 +41,7 @@ const MainScene = () => {
         const botMessage = { sender: "bot", text: data.reply };
         setMessages((prevMessages) => [...prevMessages, botMessage]);
       } else {
-        const errorMessage = {
-          sender: "bot",
-          text: "Error: Unable to get a response.",
-        };
+        const errorMessage = { sender: "bot", text: "Error: Unable to get a response." };
         setMessages((prevMessages) => [...prevMessages, errorMessage]);
       }
     } catch (error) {
@@ -58,7 +60,7 @@ const MainScene = () => {
     >
       {/* 3D Scene Section */}
       <div style={{ flex: 3, borderRight: "1px solid #ddd" }}>
-        <ThreeScene modelsStuff={models} />
+        <ThreeScene modelsStuff={models}/>
       </div>
 
       {/* Sidebar Section */}
