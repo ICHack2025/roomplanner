@@ -17,6 +17,7 @@
     "react-dom": "^18.3.1",
     "react-router": "^7.1.5",
     "react-three-fiber": "^6.0.13",
+    "sass": "^1.83.4",
     "three": "^0.173.0"
   },
   "devDependencies": {

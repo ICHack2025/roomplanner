@@ -1,0 +1,25 @@
+@font-face {
+  font-family: 'Florisha';
+  font-style: normal;
+  font-weight: 700;
+  src: url('https://fonts.cdnfonts.com/s/115738/FlorishaBold-drnV7.woff') format('woff');
+}
+
+
+$body-background-color: #AAABBC;
+$navbar-background-color: transparent;
+$navbar-item-hover-background-color: transparent;
+
+// Colors
+$primary: #6C91C2;
+$secondary: #373F47;
+$text: #000;
+$navbar-item-hover-color: $text;
+
+// Fonts
+$family-primary: 'Inter', sans-serif;
+
+h1 {
+    font-family: 'Florisha';
+    font-weight: bold;
+}
