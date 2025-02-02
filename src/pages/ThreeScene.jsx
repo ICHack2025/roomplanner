@@ -6,9 +6,9 @@ import { GLTFLoader } from "three/examples/jsm/Addons.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 
 const Location = Object.freeze({
-  leftWall: "leftWall",
-  rightWall: "rightWall",
-  Center: "Center",
+  left: "left",
+  right: "right",
+  corner: "corner",
 });
 
 const ThreeScene = ({modelsStuff}) => {
@@ -185,72 +185,97 @@ const ThreeScene = ({modelsStuff}) => {
     gltfloader.setDRACOLoader(dracoLoader);
 
     function placeObject(location, path) {
-      gltfloader.load(path, (gltf) => {
-        const model = gltf.scene;
-        model.scale.set(30, 30, 30);
-
-        const size = new THREE.Vector3();
-        const bbox = new THREE.Box3().setFromObject(model);
-        bbox.getSize(size);
-
-        //clone cubes position to work with it
-        let basePos = new THREE.Vector3();
-        cubeGroup.getWorldPosition(basePos);
-
-        // compute rotation correctly
-        let baseRot = new THREE.Euler();
-        baseRot.copy(cubeGroup.rotation);
-
-        //adjust position based on location
-        let offset = new THREE.Vector3();
-
-        //adjust position to the floor.
-        offset.set(-planeSize / 2, 0, 0);
-
-        //add specific position
-        switch (location) {
-          case Location.rightWall:
-            offset.add(
-              new THREE.Vector3(
-                0,
-                planeSize / 2 - size.x / 2,
-                -planeSize / 2 + size.z / 2
-              )
-            );
-            break;
-          case Location.leftWall:
-            offset.add(
-              new THREE.Vector3(0, planeSize / 2 - size.x / 2, planeSize / 4)
-            );
-            break;
-          case Location.corner:
-            offset.add(
-              new THREE.Vector3(0, -planeSize / 4, -planeSize / 2 + size.z / 2)
-            );
+      console.log(path);
+      fetch("http://localhost:5000/download", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ filename: path }),
+      }).then((response) => {
+        if (response.ok) {
+          return response.arrayBuffer();
         }
-
-        //transform the position using cubeGroups world matrix
-        offset.applyMatrix4(cubeGroup.matrixWorld);
-
-        //set position and rotation
-        model.position.copy(offset);
-        model.setRotationFromEuler(baseRot);
-        model.rotateZ(-Math.PI / 2);
-
-        model.castShadow = true;
-        model.receiveShadow = true;
-        model.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
+        throw new Error('Network response was not ok');
+      })
+      .then(data => {
+        gltfloader.parse(data, "", (gltf) => {
+          const model = gltf.scene;
+          model.scale.set(30, 30, 30);
+  
+          const size = new THREE.Vector3();
+          const bbox = new THREE.Box3().setFromObject(model);
+          bbox.getSize(size);
+  
+          //clone cubes position to work with it
+          let basePos = new THREE.Vector3();
+          cubeGroup.getWorldPosition(basePos);
+  
+          // compute rotation correctly
+          let baseRot = new THREE.Euler();
+          baseRot.copy(cubeGroup.rotation);
+  
+          //adjust position based on location
+          let offset = new THREE.Vector3();
+  
+          //adjust position to the floor.
+          offset.set(-planeSize / 2, 0, 0);
+  
+          //add specific position
+          switch (location) {
+            case Location.right:
+              offset.add(
+                new THREE.Vector3(
+                  0,
+                  planeSize / 2 - size.x / 2,
+                  -planeSize / 2 + size.z / 2
+                )
+              );
+              break;
+            case Location.left:
+              offset.add(
+                new THREE.Vector3(0, planeSize / 2 - size.x / 2, planeSize / 4)
+              );
+              break;
+            case Location.corner:
+              offset.add(
+                new THREE.Vector3(0, -planeSize / 4, -planeSize / 2 + size.z / 2)
+              );
           }
+  
+          //transform the position using cubeGroups world matrix
+          offset.applyMatrix4(cubeGroup.matrixWorld);
+  
+          //set position and rotation
+          model.position.copy(offset);
+          model.setRotationFromEuler(baseRot);
+          model.rotateZ(-Math.PI / 2);
+  
+          model.castShadow = true;
+          model.receiveShadow = true;
+          model.traverse((child) => {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+          scene.add(model);
         });
-        scene.add(model);
+      })
+      .catch(error => {
+        console.error('Error loading the model:', error);
       });
+      
     }
 
     for (let i = 0; i < Object.values(modelsStuff).length; i++) {
-      placeObject(Location.corner, Object.values(modelsStuff)[i]);
+      var location = Object.values(modelsStuff)[i][0];
+      // trim
+      location = location.trim();
+
+      // convert to location enum
+      var loc = Location[location];
+      placeObject(loc, Object.values(modelsStuff)[i][1]);
     }
 
     // Animation loop
