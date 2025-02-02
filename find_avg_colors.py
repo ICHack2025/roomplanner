@@ -133,6 +133,10 @@ def find_model(item_code, hex_list):
 
         # Now we must find the closest color!
         closest_model = find_closest_model(search_color, models_and_colors)
+
+        for model_pair in models_and_colors:
+            if model_pair[0] != closest_model:
+                os.remove(model_pair[0])
         
         print(closest_model)
         return closest_model
