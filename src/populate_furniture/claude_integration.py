@@ -42,14 +42,14 @@ def download_file(filename):
 
 def get_models_from_prompts(search_queries):
     results = {}
-    for key, query in search_queries.items():
+    for key, position, query in search_queries.items():
         search_results = iah.ikea_search_items(query)
         for result in search_results:
             item_id = iah.get_item_model(result)
             colors = iah.get_item_colors(result)
-            model_filename = model.find_model(item_id, list(colors.values()))
-            results[key] = model_filename
-            if model_filename != None:
+            model_url = model.find_model(item_id, list(colors.values()))
+            results[key] = (position, model_url)
+            if model_url != None:
                 break
     return results
 
@@ -134,5 +134,5 @@ def generate_queries(user_prompt):
 
 
 
-if __name__ == '__main__':Y
+if __name__ == '__main__':
     app.run(debug=True)
