@@ -22,8 +22,28 @@ const ThreeScene = () => {
     const scene = new THREE.Scene();
     // scene.add(new THREE.AxesHelper(5));
 
-    const light = new THREE.AmbientLight(0xffffff, 0.5);
+    // const light = new THREE.AmbientLight(0xffffff, 0.5);
+    // scene.add(light);
+
+    // add directional sunlight with shadowcasts
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(0, 0, 10);
+    light.rotation.set(0, 0, 10);
+    light.castShadow = true;
+    light.shadow.mapSize.width = 2048;
+    light.shadow.mapSize.height = 2048;
+    light.shadow.camera.near = 0.5;
+    light.shadow.camera.far = 500;
     scene.add(light);
+
+    const light2 = new THREE.PointLight(0xffffff, 10000);
+    light2.position.set(0, 0, 0);
+    light2.castShadow = true;
+    light2.shadow.mapSize.width = 2048;
+    light2.shadow.mapSize.height = 2048;
+    light2.shadow.camera.near = 0.5;
+    light2.shadow.camera.far = 500;
+    scene.add(light2);
 
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -92,6 +112,8 @@ const ThreeScene = () => {
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
     renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Optional for softer shadows
+
 
     // Orbit  Control
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -110,12 +132,7 @@ const ThreeScene = () => {
 
     const faceSize = 1; // Size of each face
     const planeSize = 100;
-    // const faceMaterial = new THREE.ShadowMaterial({ opacity: 0.5 });
-    const faceMaterial = new THREE.MeshStandardMaterial({
-      color: 0xffff00,
-      opacity: 0.5,
-      transparent: true,
-    });
+    const faceMaterial = new THREE.ShadowMaterial({ opacity: 1 });
 
     // Create 6 PlaneGeometries for each face
     const planes = [
@@ -184,7 +201,7 @@ const ThreeScene = () => {
 
         const size = new THREE.Vector3();
         const bbox = new THREE.Box3().setFromObject(model);
-        bbox.getSize(size)
+        bbox.getSize(size);
 
         //clone cubes position to work with it
         let basePos = new THREE.Vector3();
@@ -192,36 +209,52 @@ const ThreeScene = () => {
 
         // compute rotation correctly
         let baseRot = new THREE.Euler();
-        baseRot.copy(cubeGroup.rotation)
+        baseRot.copy(cubeGroup.rotation);
 
         //adjust position based on location
         let offset = new THREE.Vector3();
 
         //adjust position to the floor.
-        offset.set(-planeSize/2, 0, 0)
-        
+        offset.set(-planeSize / 2, 0, 0);
+
         //add specific position
         switch (location) {
           case Location.rightWall:
-            offset.add(new THREE.Vector3(0, planeSize/2 - size.x/2 , -planeSize/2 + size.z/2));
+            offset.add(
+              new THREE.Vector3(
+                0,
+                planeSize / 2 - size.x / 2,
+                -planeSize / 2 + size.z / 2
+              )
+            );
             break;
           case Location.leftWall:
-            offset.add(new THREE.Vector3(0, planeSize/2 - size.x/2 , planeSize/4));
+            offset.add(
+              new THREE.Vector3(0, planeSize / 2 - size.x / 2, planeSize / 4)
+            );
             break;
           case Location.corner:
-            offset.add(new THREE.Vector3(0, -planeSize/4, -planeSize/2 + size.z/2));
+            offset.add(
+              new THREE.Vector3(0, -planeSize / 4, -planeSize / 2 + size.z / 2)
+            );
         }
-        
 
         //transform the position using cubeGroups world matrix
-        offset.applyMatrix4(cubeGroup.matrixWorld)
+        offset.applyMatrix4(cubeGroup.matrixWorld);
 
         //set position and rotation
-        model.position.copy(offset)
-        model.setRotationFromEuler(baseRot)
+        model.position.copy(offset);
+        model.setRotationFromEuler(baseRot);
         model.rotateZ(-Math.PI / 2);
-        
 
+        model.castShadow = true;
+        model.receiveShadow = true;
+        model.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
         scene.add(model);
       });
     }
@@ -229,6 +262,9 @@ const ThreeScene = () => {
     placeObject(Location.rightWall, "./bed.glb");
     placeObject(Location.leftWall, "./somethingIkea.glb");
     placeObject(Location.corner, "./somethingIkea.glb");
+
+    const helper = new THREE.CameraHelper(light2.shadow.camera);
+    scene.add(helper);
 
     // Animation loop
     const animate = () => {
