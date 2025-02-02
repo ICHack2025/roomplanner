@@ -147,6 +147,8 @@ def find_closest_model(avg_rgb, models_colors):
 
 def hex_to_rgb(hex_color):
     """ Convert a hex color (with or without #) to an RGB tuple."""
+    if (len(hex_color) != 6):
+        return None
     hex_color = str(hex_color).lstrip("#")  # Remove # if present
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
