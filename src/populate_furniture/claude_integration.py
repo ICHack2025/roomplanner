@@ -9,6 +9,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+messages = []
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -23,7 +24,7 @@ def chat():
         # Send the message to Claude
         search_queries = generate_queries(user_prompt)
         models = get_models_from_prompts(search_queries)
-        models["\\conversation"] = generate_conversation(user_prompt)
+        #models["\\conversation"] = generate_conversation(user_prompt)
 
         # Return the response as JSON
         return jsonify(models)
@@ -63,7 +64,7 @@ def get_models_from_prompts(search_queries):
 
 def extract_text_from_textblock(text_block):
     # Extract the first TextBlock object from the list and access its 'text' field
-    text = text_block[0].text if text_block and hasattr(text_block[0], 'text') else None
+    text = text_block[-1].text if text_block and hasattr(text_block[0], 'text') else None
     return text
 
 # Function to extract items and search prompts into a dictionary
@@ -117,12 +118,7 @@ def generate_queries(user_prompt):
     
     Just list the items and their search prompts, nothing more. Ensure the prompts are specific enough that they would return the correct results on the IKEA website.
     """
-    message = client.messages.create(
-        model="claude-3-5-sonnet-20241022",
-        max_tokens=1000,
-        temperature=0,
-        system=system_prompt,
-        messages=[
+    messages.append(
             {
                 "role": "user",
                 "content": [
@@ -132,9 +128,15 @@ def generate_queries(user_prompt):
                     }
                 ]
             }
-        ]
+        )
+    message = client.messages.create(
+        model="claude-3-5-sonnet-20241022",
+        max_tokens=1000,
+        temperature=0,
+        system=system_prompt,
+        messages=messages
     )
-
+    print(message.content)
     # Parse the input text
     item_search_dict = parse_search_prompts(extract_text_from_textblock(message.content))
 
@@ -160,12 +162,7 @@ Format your response as follows:
 
 Write your entire response inside <response> tags. Keep your tone friendly and enthusiastic, as if you're having a conversation with the user.
     """
-    message = client.messages.create(
-        model="claude-3-5-sonnet-20241022",
-        max_tokens=1000,
-        temperature=0,
-        system=system_prompt,
-        messages=[
+    messages.append(
             {
                 "role": "user",
                 "content": [
@@ -175,9 +172,15 @@ Write your entire response inside <response> tags. Keep your tone friendly and e
                     }
                 ]
             }
-        ]
+        )
+    message = client.messages.create(
+        model="claude-3-5-sonnet-20241022",
+        max_tokens=1000,
+        temperature=0,
+        system=system_prompt,
+        messages= messages
     )
-    return message.content[0].text
+    return extract_text_from_textblock(message.content)
 
 if __name__ == '__main__':
     app.run(debug=True)
