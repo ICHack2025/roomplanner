@@ -6,10 +6,13 @@ const MainScene = () => {
   const [messages, setMessages] = useState([]);
   const [models, setModels] = useState({});
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // Function to handle sending a message
   const handleSend = async () => {
     if (!input.trim()) return; // Do nothing if input is empty
+
+    setLoading(true);
 
     const userMessage = { sender: "user", text: input };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
@@ -46,16 +49,19 @@ const MainScene = () => {
         const picked = options[Math.floor(Math.random() * options.length)];
         const botMessage = { sender: "bot", text: picked };
         setMessages((prevMessages) => [...prevMessages, botMessage]);
+        setLoading(false);
       } else {
         const errorMessage = {
           sender: "bot",
           text: "Error: Unable to get a response.",
         };
         setMessages((prevMessages) => [...prevMessages, errorMessage]);
+        setLoading(false);
       }
     } catch (error) {
       const errorMessage = { sender: "bot", text: "Error: Network issue." };
       setMessages((prevMessages) => [...prevMessages, errorMessage]);
+      setLoading(false);
     }
   };
 
@@ -161,9 +167,10 @@ const MainScene = () => {
                 fontSize: "1rem",
                 border: "1px solid #ccc", // Same border style as the input
               }}
+              disabled={loading}
               onClick={handleSend}
             >
-              Send
+              {loading ? "Loading..." : "Send"}
             </button>
           </div>
         </div>
