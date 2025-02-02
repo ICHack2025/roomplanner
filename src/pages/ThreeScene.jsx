@@ -149,8 +149,8 @@ const ThreeScene = () => {
       cubeGroup.add(planeMesh);
     });
 
-    cubeGroup.position.set(cube[0].x / 2 / 10 + 2, 10, 0);
-    cubeGroup.rotateX(angleX - 0.7);
+    cubeGroup.position.set(cube[0].x / 2 / 10 + 2, 30, 0);
+    cubeGroup.rotateX(angleX - 0.75);
     cubeGroup.rotateY(-angleY);
     cubeGroup.rotateZ(angleZ);
     cubeGroup.receiveShadow = true;
@@ -206,10 +206,10 @@ const ThreeScene = () => {
             offset.add(new THREE.Vector3(0, planeSize/2 - size.x/2 , -planeSize/2 + size.z/2));
             break;
           case Location.leftWall:
-            offset.add(new THREE.Vector3(0, planeSize/2 - size.x/2 , 0));
+            offset.add(new THREE.Vector3(0, planeSize/2 - size.x/2 , planeSize/4));
             break;
           case Location.corner:
-            offset.add(new THREE.Vector3(0, 0, -planeSize/2 + size.z/2));
+            offset.add(new THREE.Vector3(0, -planeSize/4, -planeSize/2 + size.z/2));
         }
         
 
