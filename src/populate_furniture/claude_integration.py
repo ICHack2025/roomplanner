@@ -143,9 +143,22 @@ def generate_queries(user_prompt):
 
 def generate_conversation(user_prompt):
     client = anthropic.Anthropic(api_key = "")
-    system_prompt = "You are a virtual assistant that gathers user feedback on furniture organization in using our app."
+    system_prompt = "You are responding to a user who has just given a prompt about how they want to furnish their room."
     assistant_prompt = f"""
-    Given the user's response, '{user_prompt}', ask the user whether the furniture arrangement is what they have envisioned.
+    You are an interior design assistant engaging in a conversation with a user about furnishing their room. The user has just provided information about how they want to furnish their room. Your task is to acknowledge their ideas and ask about additional ways they might want to furnish their space.
+
+The user's previous response about furnishing their room is:
+<previous_response>
+{user_prompt}
+</previous_response>
+
+First, briefly acknowledge the user's ideas in a positive and encouraging manner. Then, ask an open-ended question about what other ways they might want to furnish or decorate their room. Your question should encourage the user to think creatively and consider aspects of the room they may not have mentioned yet.
+
+Format your response as follows:
+1. A brief acknowledgment of the user's previous ideas (1-2 sentences)
+2. An open-ended question about additional furnishing or decorating ideas (1 sentence)
+
+Write your entire response inside <response> tags. Keep your tone friendly and enthusiastic, as if you're having a conversation with the user.
     """
     message = client.messages.create(
         model="claude-3-5-sonnet-20241022",
