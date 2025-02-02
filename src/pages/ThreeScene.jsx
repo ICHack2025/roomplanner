@@ -38,7 +38,7 @@ const ThreeScene = () => {
 
     const camera = new THREE.PerspectiveCamera(
       75,
-      window.innerWidth / window.innerHeight,
+      (window.innerWidth * 0.75) / window.innerHeight,
       0.1,
       1000
     );
@@ -99,7 +99,7 @@ const ThreeScene = () => {
     const angleZ = Math.atan2(R.elements[3], R.elements[0]); // Rotation around Z-axis (roll)
 
     const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(window.innerWidth * 0.75, window.innerHeight);
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
     renderer.shadowMap.enabled = true;
