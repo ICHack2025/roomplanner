@@ -109,7 +109,7 @@ const ThreeScene = () => {
     scene.background = texture;
 
     const faceSize = 1; // Size of each face
-    const planeSize = 50;
+    const planeSize = 100;
     // const faceMaterial = new THREE.ShadowMaterial({ opacity: 0.5 });
     const faceMaterial = new THREE.MeshStandardMaterial({
       color: 0xffff00,
@@ -180,7 +180,7 @@ const ThreeScene = () => {
     function placeObject(location, path) {
       gltfloader.load(path, (gltf) => {
         const model = gltf.scene;
-        model.scale.set(10, 10, 10);
+        model.scale.set(30, 30, 30);
 
         const size = new THREE.Vector3();
         const bbox = new THREE.Box3().setFromObject(model);
