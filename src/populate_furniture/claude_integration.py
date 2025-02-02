@@ -71,8 +71,8 @@ def parse_search_prompts(text):
     # Loop through each line and extract item and search prompt
     for line in lines:
         # Split the line by the first colon to separate the item and search prompt
-        item, search_prompt = line.split(':', 1)
-        item_dict[item.strip()] = search_prompt.strip()  # Store the item and prompt in the dictionary
+        item, position, search_prompt = line.split(':', 2)
+        item_dict[item.strip()] = (position, search_prompt.strip())  # Store the item and prompt in the dictionary
     
     return item_dict
 
@@ -96,12 +96,14 @@ def generate_queries(user_prompt):
     </items>
     
     For each item listed above, generate a search prompt that would be suitable for finding the items the user mentioned on the IKEA website. Be creative in combining the elements the user mentioned with IKEA's typical style.
-    
+    Furthermore, for each item listed above, please asign a Position to it. Imagine these items are all to be placed in the same room and you have the option of placing each on either of the 3 following options: on the Left side of the room (left), on the Right side of the room (right) or in the Corner of the room (corner). You are a wonderfully talented interior designer, with a great reputation for making designs that are comfortable and aesthetic.
+    basically, for each item, pick a Position (either left, right, or corner).
+
     For each item listed above, generate a search prompt **without any additional explanation**. Follow this format exactly:
     <search_prompts>
-    [Item 1]: [Search prompt for Item 1]
-    [Item 2]: [Search prompt for Item 2]
-    [Item 3]: [Search prompt for Item 3]
+    [Item 1]: [Position (left/right/corner) for Item 1]: [Search prompt for Item 1]
+    [Item 2]: [Position (left/right/corner) for Item 2]: [Search prompt for Item 2]
+    [Item 3]: [Position (left/right/corner) for Item 3]: [Search prompt for Item 3]
     </search_prompts>
     
     Just list the items and their search prompts, nothing more. Ensure the prompts are specific enough that they would return the correct results on the IKEA website.
@@ -131,5 +133,5 @@ def generate_queries(user_prompt):
 
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':Y
     app.run(debug=True)
