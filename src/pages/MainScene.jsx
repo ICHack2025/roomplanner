@@ -94,8 +94,8 @@ const MainScene = () => {
                   display: "inline-block",
                   padding: "8px 12px",
                   borderRadius: "12px",
-                  background: message.sender === "user" ? "#007bff" : "#f1f1f1",
-                  color: message.sender === "user" ? "white" : "black",
+                  background: message.sender === "user" ? "#f9f9f3ff" : "#ffffff",
+                  color: message.sender === "user" ? "black" : "black",
                 }}
               >
                 {message.text}
