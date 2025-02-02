@@ -7,13 +7,19 @@ import cv2
 import numpy
 from colorthief import ColorThief
 import shutil
+from math import sqrt
 
 
 # Constants like country, language, base url
 constants = ikea_api.Constants(country="gb", language="en")
 ikea_api.Auth(constants).get_guest_token()
 
-def models_and_avg_color(item_code):
+
+# MAIN
+
+def find_model(item_code, hex_list):
+
+    search_color = average_color(hex_list)
 
     rotera_item = ikea_api.RoteraItem(constants)
     rotera_item.get_item(item_code)
@@ -124,8 +130,39 @@ def models_and_avg_color(item_code):
 
         shutil.rmtree(base_colors)
         print(models_and_colors)
-        return models_and_colors
+
+        # Now we must find the closest color!
+        closest_model = find_closest_model(search_color, models_and_colors)
+        
+        print(closest_model)
+        return closest_model
 
     except Exception as e:
         print(f"Unexpected error: {e}")
 
+# HELPERS
+
+def color_distance(c1, c2):
+    """Calculate Euclidean distance between two RGB colors."""
+    return sqrt(sum((c1[i] - c2[i]) ** 2 for i in range(3)))
+
+def find_closest_model(avg_rgb, models_colors):
+    """Find the model with the closest color to the average RGB."""
+    return min(models_colors, key=lambda mc: color_distance(avg_rgb, mc[1]))[0]
+
+
+def hex_to_rgb(hex_color):
+    """ Convert a hex color (with or without #) to an RGB tuple."""
+    hex_color = str(hex_color).lstrip("#")  # Remove # if present
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
+def average_color(hex_colors):
+    """Find the average RGB color from a list of hex colors."""
+    rgb_colors = [hex_to_rgb(color) for color in hex_colors]
+    
+    avg_rgb = tuple(
+        sum(color[i] for color in rgb_colors) // len(rgb_colors)
+        for i in range(3)
+    )
+    
+    return avg_rgb
