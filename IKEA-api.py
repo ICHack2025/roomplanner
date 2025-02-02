@@ -10,23 +10,8 @@ from colorthief import ColorThief
 
 # Constants like country, language, base url
 constants = ikea_api.Constants(country="gb", language="en")
-# Search API
-search = ikea_api.Search(constants)
-# Search endpoint with prepared data
-endpoint = search.search(
-    "Black Coffee Table",
-    limit=1,
-    types=["PRODUCT"]
-)
-# print(ikea_api.run(endpoint))
-# ?????
 ikea_api.Auth(constants).get_guest_token()
 
-ingka_items = ikea_api.IngkaItems(constants)
-#print(ingka_items.get_items(["30457903"]))
-
-pip_item = ikea_api.PipItem(constants)
-#print(pip_item.get_item(["30457903"]))
 
 rotera_item = ikea_api.RoteraItem(constants)
 item_code = "00404204"
@@ -37,41 +22,66 @@ try:
     # Get the endpoint and execute it
     endpoint = rotera_item.get_item(item_code)
     response = ikea_api.run(endpoint)  # Run the request to get actual data
+    
+    model_urls = set()
 
-    #print("Response Data:", response)  # Inspect the JSON response
+    # Loop through each variation and model to create pairs
+    for variation in response['variations']:
+        usdz_url = None
+        glb_url = None
+        
+        for model in variation['models']:
+            # Check if the model is of format "usdz"
+            if model['format'] == 'usdz':
+                usdz_url = model['url']
+            # Check if the model is of format "glb_draco"
+            elif (model['format'] == 'glb_draco') or (model['format'] == 'glb') :
+                glb_url = model['url']
+            
+            # If both usdz and glb URLs are found, add them as a pair to the set
+            if usdz_url and glb_url:
+                model_urls.add((usdz_url, glb_url))
+                # Reset the URLs for the next pair
+                usdz_url = None
+                glb_url = None
 
-    # Attempt to find the 3D model URL in response
-    print(response)
-    model_urls = []
-    for variation in response.get("variations"):
-        for item in variation.get("models"):
-            cur_url = item.get("url")
-            if ".usdz" in cur_url:
-                model_urls.append(item.get("url"))
-    # print(model_urls[0])
+    # Print the set of pairs
+    print(model_urls)
+
 
 
     models_and_colors = []
 
 
-    for i, model_url in enumerate(model_urls):
-        print(f"\n3D Model Found: {model_url}")
+    for i, model_url_pair in enumerate(model_urls):
+        # print(f"\n3D Model Found: {model_url}")
 
-        # Download the model
-        model_response = requests.get(model_url)
+        model_url_usdz = model_url_pair[0]
+        model_url_glb = model_url_pair[1]
 
-        if model_response.status_code == 200:
-            model_filename_usdz = (f"{i}.usdz"
-                                   f"")  # Adjust file format if needed
+        # Download the models
+        model_response_usdz = requests.get(model_url_usdz)
+        model_response_glb = requests.get(model_url_glb)
+
+        if (model_response_usdz.status_code == 200) and (model_response_glb.status_code == 200):
+
+            model_filename_usdz = model_url_usdz.split('/')[-1]
+            model_filename_glb = model_url_glb.split('/')[-1]
+                
+            # print(f"model filename: {model_filename}")
             with open(model_filename_usdz, "wb") as file:
-                file.write(model_response.content)
-            print(f"\n3D model saved as: {model_filename_usdz}")
+                file.write(model_response_usdz.content)
+            print(f"3D model saved as: {model_filename_usdz}\n")
+            with open(model_filename_glb, "wb") as file:
+                file.write(model_response_glb.content)
+            print(f"3D model saved as: {model_filename_glb}\n")
 
-            
+            # FOR THE USDZ FILE
+            # if ".usdz" in model_filename: 
             model_filename_zip = (f"{i}.zip"
-                                  f"")  # Adjust file format if needed
+                                    f"")  # Adjust file format if needed
             with open(model_filename_zip, "wb") as file:
-                file.write(model_response.content)
+                file.write(model_response_usdz.content)
 
             # Path to the ZIP file
             search_text = 'basecolor'
@@ -93,22 +103,22 @@ try:
                         dominant_color = color_thief.get_color(quality=1)
 
                         # Dominant color of the image!
-                        models_and_colors.append( (model_filename_usdz, dominant_color) )
+                        models_and_colors.append( (model_filename_glb, dominant_color) )
 
                         # print(dominant_color)
+                    
+                    else:
+                        print(f"No files found containing '{search_text}' in their filename.")
+
                 
-                else:
-                    print(f"No files found containing '{search_text}' in their filename.")
 
-            
-
-            # print(f"3D model saved as: {model_filename_zip}")
-            os.remove(model_filename_zip)
-            # print("delete zip")
-            # print("\n\n")
+                # print(f"3D model saved as: {model_filename_zip}")
+                os.remove(model_filename_zip)
+                # print("delete zip")
+                # print("\n\n")
 
         else:
-            print(f"Failed to download 3D model. HTTP Status: {model_response.status_code}")
+            print(f"Failed to download 3D model. HTTP Status: {model_response_glb.status_code}") # WHEN SOMETHING FAILS
 
     else:
         print("\nNo 3D model URL found in response.")
