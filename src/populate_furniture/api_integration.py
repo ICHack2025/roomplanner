@@ -10,9 +10,12 @@ import model
 
 # search_queries = furniture_prompt.generate_queries(user_prompt)
 def search_model():
-    search_queries = {'Platform bed': 'wooden platform bed frame queen', 'Linen sheets': 'white linen duvet cover set', 'Wooden nightstands': 'solid wood bedside table', 'Bedside lamps': 'table lamp warm light wood base', 'Tall plant': 'artificial floor plant with pot', 'Abstract art': 'modern wall art print', 'Textured rug': 'plush bedroom area rug', 'Armchair': 'reading armchair upholstered', 'Side table': 'small round coffee table', 'Blackout curtains': 'room darkening curtain panels'}
+    search_queries = {'Platform bed': (' corner', 'wooden platform bed frame queen'), 'Linen sheets': (' corner', 'white linen duvet cover set'), 'Wooden nightstands': (' left', 'solid wood bedside table'), 'Bedside lamps': (' left', 'warm table lamp wooden base'), 'Tall plant': (' corner', 'artificial floor plant with pot'), 'Abstract art': (' right', 'abstract wall art prints'), 'Textured rug': (' corner', 'plush bedroom area rug neutral'), 'Armchair': (' right', 'upholstered reading chair'), 'Side table': (' right', 'small round coffee table'), 'Blackout curtains': (' right', 'blackout curtain panels gray')}
+    # TODO: LINK TOGETHER
+    
     results = {}
-    for key, query in search_queries.items():
+    for key, (position, query) in search_queries.items():
+        print(key, position)
         search_results = iah.ikea_search_items(query)
         for result in search_results:
             item_id = iah.get_item_model(result)
