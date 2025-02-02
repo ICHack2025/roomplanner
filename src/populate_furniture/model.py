@@ -75,12 +75,15 @@ def find_model(item_code, hex_list):
             if (model_response_usdz.status_code == 200) and (model_response_glb.status_code == 200):
 
                 model_filename_usdz = model_url_usdz.split('/')[-1]
-                # model_filename_glb = model_url_glb.split('/')[-1]
+                model_filename_glb = model_url_glb.split('/')[-1]
                     
                 # Saving the models as files
                 with open(model_filename_usdz, "wb") as file:
                     file.write(model_response_usdz.content)
                 print(f"3D model saved as: {model_filename_usdz}\n")
+                with open(model_filename_glb, "wb") as file:
+                    file.write(model_response_glb.content)
+                print(f"3D model saved as: {model_filename_glb}\n")
 
                 # usdz becomes ZIP to extract colors!
                 model_filename_zip = (f"{i}.zip"
@@ -108,13 +111,14 @@ def find_model(item_code, hex_list):
                             dominant_color = color_thief.get_color(quality=1)
 
                             # Dominant color of the image!
-                            models_and_colors.append( (model_url_glb, dominant_color) )
+                            models_and_colors.append( (model_filename_glb, dominant_color) )
 
                     else:
                         print(f"No files found containing '{search_text}' in their filename.")
 
                 os.remove(model_filename_zip)
                 os.remove(model_filename_usdz)
+
             else:
                 print(f"Failed to download 3D model. HTTP Status usdz: {model_response_usdz.status_code}") 
                 print(f"Failed to download 3D model. HTTP Status glb: {model_response_glb.status_code}") 
@@ -128,6 +132,10 @@ def find_model(item_code, hex_list):
         # Now we must find the closest color!
         closest_model = find_closest_model(search_color, models_and_colors)
         
+        for model_col in models_and_colors:
+            if model_col[0] != closest_model:
+                os.remove(model_col[0])
+
         print(f"\n\nSUCCESS\n{closest_model}\n\n")
         return closest_model
 

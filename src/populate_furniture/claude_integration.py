@@ -1,8 +1,8 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file, CORS
 import anthropic
 import ikea_api_helper as iah
 import model
-from flask_cors import CORS
+import os
 
 
 app = Flask(__name__)
@@ -28,6 +28,15 @@ def chat():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+@app.route('/download/<filename>', methods=['GET'])
+def download_file(filename):
+    # file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if os.path.exists(filename):
+        return send_file(filename, as_attachment=True)
+    else:
+        return jsonify({"error": "File not found"}), 404
 
 
 def get_models_from_prompts(search_queries):
@@ -37,9 +46,9 @@ def get_models_from_prompts(search_queries):
         for result in search_results:
             item_id = iah.get_item_model(result)
             colors = iah.get_item_colors(result)
-            model_url = model.find_model(item_id, list(colors.values()))
-            results[key] = model_url
-            if model_url != None:
+            model_filename = model.find_model(item_id, list(colors.values()))
+            results[key] = model_filename
+            if model_filename != None:
                 break
     return results
 
