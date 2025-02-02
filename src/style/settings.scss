@@ -1,0 +1,16 @@
+$body-background-color: #AAABBC;
+$navbar-background-color: transparent;
+$navbar-item-hover-background-color: transparent;
+
+// Colors
+$primary: #6C91C2;
+$secondary: #373F47;
+$text: #000;
+$navbar-item-hover-color: $text;
+
+// Fonts
+$family-primary: 'Inter', sans-serif;
+
+.button {
+    background-color: $primary !important;
+}
