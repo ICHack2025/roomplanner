@@ -1,202 +1,133 @@
-import React, { useEffect, useRef } from "react";
-import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import Stats from "three/examples/jsm/libs/stats.module";
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
-import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
+import React, { useEffect, useRef, useState } from 'react';
+import * as THREE from 'three';
 
-const hdrPath = "./sky.hdr";
-const objPath = "./template_room.obj"; // Path to your .obj file
-const overlayImage = "./texture.jpg"; // Replace with the path to your overlay image
+const CubeInScreenSpace = () => {
+  const mountRef = useRef(null);
+  const draggingPointRef = useRef(null);  // Use a ref to track the dragging point
 
-const ThreeScene = () => {
-  const containerRef = useRef();
+  const [cube, setCube] = useState(null);
+  const [points, setPoints] = useState([
+    { x: 0.2, y: 0.2 },
+    { x: 0.8, y: 0.2 },
+    { x: 0.5, y: 0.8 },
+  ]);
+
+  const mouse = new THREE.Vector2();
+  const raycaster = new THREE.Raycaster();
 
   useEffect(() => {
+    const width = mountRef.current.clientWidth;
+    const height = mountRef.current.clientHeight;
+
+    // Set up the scene, camera, and renderer
     const scene = new THREE.Scene();
-    scene.add(new THREE.AxesHelper(5));
-
-    const light = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(light);
-
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
-    );
-    camera.position.set(0, 0, 40);
-
+    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    containerRef.current.appendChild(renderer.domElement);
+    renderer.setSize(width, height);
+    mountRef.current.appendChild(renderer.domElement);
 
-    // OrbitControls initialization
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.enableRotate = true;
-    controls.enableZoom = true;
+    // Create a cube
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const cubeObj = new THREE.Mesh(geometry, material);
+    scene.add(cubeObj);
 
-    // Load HDR Environment
-    const loader2 = new RGBELoader();
-    loader2.load(
-      hdrPath,
-      (texture) => {
-        texture.mapping = THREE.EquirectangularReflectionMapping;
-        scene.environment = texture;
-        scene.background = texture;
-      },
-      undefined,
-      (error) => {
-        console.error("Error loading HDR file:", error);
-      }
-    );
+    // Position camera
+    camera.position.z = 5;
 
-    const material = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      roughness: 0.5,
-      metalness: 0.5,
-      side: THREE.DoubleSide,
+    // Create draggable points
+    const pointGeometry = new THREE.CircleGeometry(0.05, 32);
+    const pointMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const pointMeshes = points.map((point, index) => {
+      const pointMesh = new THREE.Mesh(pointGeometry, pointMaterial);
+      pointMesh.position.set(point.x * 2 - 1, -(point.y * 2 - 1), 0);
+      pointMesh.userData = { index }; // Store index for identifying the point
+      scene.add(pointMesh);
+      return pointMesh;
     });
 
-    // Load .obj Model
-    const objLoader = new OBJLoader();
-    objLoader.load(
-      objPath,
-      (object) => {
-        object.position.set(0, 0, 0); // Position the object in the background
-        object.scale.set(10, 10, 10); // Adjust the size of the model
-        object.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            child.material = material;
-          }
-        });
-        scene.add(object);
-      },
-      undefined,
-      (error) => {
-        console.error("Error loading OBJ file:", error);
-      }
-    );
+    // Update points positions
+    const updateCubePosition = () => {
+      const worldPoints = pointMeshes.map((pointMesh) => {
+        const vector = new THREE.Vector3(
+          pointMesh.position.x,
+          pointMesh.position.y,
+          0.5
+        ).unproject(camera);
+        return vector;
+      });
 
-    // Stats
-    const stats = new Stats();
-    containerRef.current.appendChild(stats.dom);
-
-    // Handle Resize
-    const onWindowResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    };
-    window.addEventListener("resize", onWindowResize);
-
-    // WASD Controls and Bounds (no sliding)
-    const movementSpeed = 0.5;
-    const bounds = {
-      x: [-50, 50],
-      y: [-50, 50],
-      z: [10, 70],
+      const box = new THREE.Box3().setFromPoints(worldPoints);
+      cubeObj.position.copy(box.getCenter(new THREE.Vector3()));
+      const size = box.getSize(new THREE.Vector3());
+      cubeObj.scale.set(size.x, size.y, size.z);
     };
 
-    const handleKeyDown = (event) => {
-      switch (event.key) {
-        case "w":
-          if (camera.position.z - movementSpeed >= bounds.z[0]) {
-            camera.position.z -= movementSpeed;
-          }
-          break;
-        case "s":
-          if (camera.position.z + movementSpeed <= bounds.z[1]) {
-            camera.position.z += movementSpeed;
-          }
-          break;
-        case "a":
-          if (camera.position.x - movementSpeed >= bounds.x[0]) {
-            camera.position.x -= movementSpeed;
-          }
-          break;
-        case "d":
-          if (camera.position.x + movementSpeed <= bounds.x[1]) {
-            camera.position.x += movementSpeed;
-          }
-          break;
-        case "ArrowUp":
-          if (camera.position.y + movementSpeed <= bounds.y[1]) {
-            camera.position.y += movementSpeed;
-          }
-          break;
-        case "ArrowDown":
-          if (camera.position.y - movementSpeed >= bounds.y[0]) {
-            camera.position.y -= movementSpeed;
-          }
-          break;
-        default:
-          break;
+    // Event listener for mouse move
+    const onMouseMove = (event) => {
+      if (draggingPointRef.current !== null) {
+        // Update mouse position
+        const rect = mountRef.current.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        // Update the dragging point's position
+        const intersectedPoint = pointMeshes[draggingPointRef.current];
+        intersectedPoint.position.set(mouse.x, mouse.y, 0);
+        updateCubePosition();
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    // Event listener for mouse down
+    const onMouseDown = (event) => {
+      const rect = mountRef.current.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-    // FOV change on scroll without re-rendering
-    const onScroll = (event) => {
-      if (event.deltaY > 0 && camera.fov < 120) {
-        camera.fov += 1;
-      } else if (event.deltaY < 0 && camera.fov > 30) {
-        camera.fov -= 1;
+      raycaster.setFromCamera(mouse, camera);
+
+      // Check for intersection with points
+      const intersects = raycaster.intersectObjects(pointMeshes);
+      if (intersects.length > 0) {
+        const index = intersects[0].object.userData.index; // Get the index of the clicked point
+        draggingPointRef.current = index;  // Use ref to set the dragged point
       }
-      camera.updateProjectionMatrix();
     };
-    window.addEventListener("wheel", onScroll);
 
-    // Animate
+    // Event listener for mouse up
+    const onMouseUp = () => {
+      draggingPointRef.current = null; // Stop dragging
+    };
+
+    // Add event listeners for mouse events
+    mountRef.current.addEventListener('mousedown', onMouseDown);
+    mountRef.current.addEventListener('mousemove', onMouseMove);
+    mountRef.current.addEventListener('mouseup', onMouseUp);
+    mountRef.current.addEventListener('mouseleave', onMouseUp);
+
+    // Render loop
     const animate = () => {
       requestAnimationFrame(animate);
-      controls.update(); // Only update the controls here
       renderer.render(scene, camera);
-      stats.update();
     };
-
     animate();
 
-    // Cleanup
+    setCube(cubeObj);
+
     return () => {
-      window.removeEventListener("resize", onWindowResize);
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("wheel", onScroll);
-      controls.dispose();
-      renderer.dispose();
-      containerRef.current.removeChild(renderer.domElement);
-      containerRef.current.removeChild(stats.dom);
+      mountRef.current.removeChild(renderer.domElement);
+      mountRef.current.removeEventListener('mousedown', onMouseDown);
+      mountRef.current.removeEventListener('mousemove', onMouseMove);
+      mountRef.current.removeEventListener('mouseup', onMouseUp);
+      mountRef.current.removeEventListener('mouseleave', onMouseUp);
     };
-  }, []);
+  }, [points]);
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        position: "relative",
-        width: "100%",
-        height: "100%",
-      }}
-    >
-      {/* Overlay Image */}
-      <img
-        src={overlayImage}
-        alt="Overlay"
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none", // Prevent image from blocking interaction
-          mixBlendMode: "multiply", // Optional: Adjust blending with the scene
-          opacity: 0.5, // Adjust for visibility
-        }}
-      />
+    <div ref={mountRef} style={{ width: '100vh', height: '100vh' }}>
+      {/* Optionally, you can show the points on a separate UI */}
     </div>
   );
 };
 
-export default ThreeScene;
+export default CubeInScreenSpace;
