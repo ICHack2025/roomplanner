@@ -16,17 +16,5 @@ createRoot(document.getElementById("root")).render(
           <Route path="/real" element={<ThreeScene />} />
         </Routes>
       </BrowserRouter>
-      {/* Cover the whole page */}
-      <img src="./wavebg.png" style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        objectFit: "cover",
-        opacity: 0.2,
-        zIndex: 0,
-        pointerEvents: "none"
-      }} />
     </DndProvider>
 );
