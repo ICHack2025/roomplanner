@@ -118,6 +118,7 @@ def generate_queries(user_prompt):
     
     Just list the items and their search prompts, nothing more. Ensure the prompts are specific enough that they would return the correct results on the IKEA website.
     """
+    messages = []
     messages.append(
             {
                 "role": "user",

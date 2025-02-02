@@ -30,7 +30,21 @@ const MainScene = () => {
         const data = await response.json();
         console.log(data);
         setModels(data);
-        const botMessage = { sender: "bot", text: data.reply };
+        // Create a ranodom reply message
+        const options = [
+          "Sure, I have generated a room design for you.",
+          "Sure, heres a room design for you.",
+          "Here is a room design for you.",
+          "I have generated a room design for you.",
+          "I have created a room design for you.",
+          "I have designed a room for you.",
+          "I have made a room design for you.",
+          "I have created a room design for you.",
+          "I have made a room design for you.",
+        ]
+
+        const picked = options[Math.floor(Math.random() * options.length)];
+        const botMessage = { sender: "bot", text: picked };
         setMessages((prevMessages) => [...prevMessages, botMessage]);
       } else {
         const errorMessage = {

@@ -19,7 +19,6 @@ const ThreeScene = ({ modelsStuff }) => {
   const containerRef = useRef(null);
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
-
   useEffect(() => {
     // Get URL parameters from the browser
     // Setup three.js scene
@@ -335,9 +334,17 @@ const ThreeScene = ({ modelsStuff }) => {
     // Cleanup
     return () => {
       window.removeEventListener("resize", onResize);
+
+      // Dispose renderer and remove canvas from DOM
       renderer.dispose();
+      const canvas = renderer.domElement;
+      if (canvas.parentNode) {
+        canvas.parentNode.removeChild(canvas);
+      }
+
+      rendererRef.current = null;
     };
-  }, []);
+  }, [modelsStuff]);
 
   return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
 };
