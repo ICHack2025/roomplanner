@@ -159,9 +159,9 @@ const ThreeScene = () => {
       cubeGroup.add(planeMesh);
     });
 
-    cubeGroup.position.set(cube[0].x / 2 / 10 + 2, 30, 0);
-    cubeGroup.rotateX(angleX - 0.75);
-    cubeGroup.rotateY(-angleY);
+    cubeGroup.position.set(cube[0].x / 2 / 10 + 10, 27, 0);
+    cubeGroup.rotateX(angleX - 0.70);
+    cubeGroup.rotateY(-angleY-0.05);
     cubeGroup.rotateZ(angleZ);
     cubeGroup.receiveShadow = true;
 
