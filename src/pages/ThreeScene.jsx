@@ -11,7 +11,7 @@ const Location = Object.freeze({
   Center: "Center",
 });
 
-const ThreeScene = () => {
+const ThreeScene = ({modelsStuff}) => {
   const containerRef = useRef(null);
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
@@ -120,9 +120,6 @@ const ThreeScene = () => {
     scene.background = texture;
     scene.environment = texture;
 
-    // scene.environment = texture;
-    // scene.background = texture;
-
     const faceSize = 1; // Size of each face
     const planeSize = 100;
     const faceMaterial = new THREE.ShadowMaterial({ opacity: 1 });
@@ -159,9 +156,9 @@ const ThreeScene = () => {
       cubeGroup.add(planeMesh);
     });
 
-    cubeGroup.position.set(cube[0].x / 2 / 10 + 2, 30, 0);
-    cubeGroup.rotateX(angleX - 0.75);
-    cubeGroup.rotateY(-angleY);
+    cubeGroup.position.set(cube[0].x / 2 / 10 + 10, 27, 0);
+    cubeGroup.rotateX(angleX - 0.70);
+    cubeGroup.rotateY(-angleY-0.05);
     cubeGroup.rotateZ(angleZ);
     cubeGroup.receiveShadow = true;
 
@@ -252,9 +249,9 @@ const ThreeScene = () => {
       });
     }
 
-    placeObject(Location.rightWall, "./bed.glb");
-    placeObject(Location.leftWall, "./somethingIkea.glb");
-    placeObject(Location.corner, "./somethingIkea.glb");
+    for (let i = 0; i < Object.values(modelsStuff).length; i++) {
+      placeObject(Location.corner, Object.values(modelsStuff)[i]);
+    }
 
     // Animation loop
     const animate = () => {
