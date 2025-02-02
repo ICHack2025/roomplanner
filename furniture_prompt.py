@@ -27,7 +27,7 @@ def parse_search_prompts(text):
     return item_dict
 
 def generate_queries(user_prompt):
-    client = anthropic.Anthropic(ENTER API KEY HERE)
+    client = anthropic.Anthropic(api_key="")
 
 
     # Prepare the assistant prompt
