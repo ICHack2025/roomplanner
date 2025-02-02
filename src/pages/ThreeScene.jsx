@@ -1,7 +1,15 @@
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/Addons.js";
+import { DRACOLoader } from "three/examples/jsm/Addons.js";
+import { GLTFLoader } from "three/examples/jsm/Addons.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
+
+const Location = Object.freeze({
+  leftWall: "leftWall",
+  rightWall: "rightWall",
+  Center: "Center",
+});
 
 const ThreeScene = () => {
   const containerRef = useRef(null);
@@ -14,8 +22,8 @@ const ThreeScene = () => {
     const scene = new THREE.Scene();
     // scene.add(new THREE.AxesHelper(5));
 
-    // const light = new THREE.AmbientLight(0xffffff, 0.5);
-    // scene.add(light);
+    const light = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(light);
 
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -35,17 +43,17 @@ const ThreeScene = () => {
       cube[1].x - cube[0].x,
       cube[1].y - cube[0].y,
       cube[1].z + 1
-    )
+    );
     const v2 = new THREE.Vector3(
       cube[2].x - cube[0].x,
       cube[2].y - cube[0].y,
       cube[2].z + 1
-    )
+    );
     const v3 = new THREE.Vector3(
       cube[3].x - cube[0].x,
       cube[3].y - cube[0].y,
       cube[3].z + 1
-    )
+    );
 
     // Draw the three vectors in the world:
     const material1 = new THREE.LineBasicMaterial({
@@ -74,16 +82,22 @@ const ThreeScene = () => {
     // Assuming R is a proper rotation matrix
     const angleX = Math.atan2(R.elements[5], R.elements[8]); // Rotation around X-axis (pitch)
     const angleY = Math.atan2(
-        -R.elements[6],
-        Math.sqrt(R.elements[0] ** 2 + R.elements[3] ** 2) // Yaw (Rotation around Y-axis)
-      );
+      -R.elements[6],
+      Math.sqrt(R.elements[0] ** 2 + R.elements[3] ** 2) // Yaw (Rotation around Y-axis)
+    );
     const angleZ = Math.atan2(R.elements[3], R.elements[0]); // Rotation around Z-axis (roll)
 
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
-    renderer.shadowMap.enabled = true
+    renderer.shadowMap.enabled = true;
+
+    // Orbit  Control
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.enableRotate = true;
+    controls.enableZoom = false;
 
     const stats = new Stats();
     containerRef.current.appendChild(stats.dom);
@@ -95,19 +109,23 @@ const ThreeScene = () => {
     scene.background = texture;
 
     const faceSize = 1; // Size of each face
-    const planeSize = 100;
-    const faceMaterial = new THREE.ShadowMaterial({ opacity: 0.5 });
+    const planeSize = 50;
+    // const faceMaterial = new THREE.ShadowMaterial({ opacity: 0.5 });
+    const faceMaterial = new THREE.MeshStandardMaterial({
+      color: 0xffff00,
+      opacity: 0.5,
+      transparent: true,
+    });
 
     // Create 6 PlaneGeometries for each face
     const planes = [
-        { position: [0, 0, 0.5], rotation: [0, Math.PI, 0] }, // Front
-        { position: [0, 0, -0.5], rotation: [0, 0, 0] }, // Back
-        { position: [0.5, 0, 0], rotation: [0, -Math.PI / 2, 0] }, // Right
-        { position: [-0.5, 0, 0], rotation: [0, Math.PI / 2, 0] }, // Left
-        { position: [0, 0.5, 0], rotation: [Math.PI / 2, 0, 0] }, // Top
-        { position: [0, -0.5, 0], rotation: [-Math.PI / 2, 0, 0] }, // Bottom
-      ];
-      
+      { position: [0, 0, 0.5], rotation: [0, Math.PI, 0] }, // Front
+      { position: [0, 0, -0.5], rotation: [0, 0, 0] }, // Back
+      { position: [0.5, 0, 0], rotation: [0, -Math.PI / 2, 0] }, // Right
+      { position: [-0.5, 0, 0], rotation: [0, Math.PI / 2, 0] }, // Left
+      { position: [0, 0.5, 0], rotation: [Math.PI / 2, 0, 0] }, // Top
+      { position: [0, -0.5, 0], rotation: [-Math.PI / 2, 0, 0] }, // Bottom
+    ];
 
     const cubeGroup = new THREE.Object3D();
 
@@ -151,30 +169,51 @@ const ThreeScene = () => {
 
     scene.add(cubeGroup);
 
-    // scene.add(cubeMesh);
+    /// * OBJECTS * ///
 
-    const sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
-    const sphereMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    sphere.position.set(0, 5, 0);
-    sphere.castShadow = true;
-    sphere.receiveShadow = true; // Sphere casts a shadow
-    scene.add(sphere);
+    const gltfloader = new GLTFLoader();
+    // Attach DRACOLoader to GLTFLoader
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/"); // Use Draco's CDN or your local path
+    gltfloader.setDRACOLoader(dracoLoader);
 
-    //   Add light above sphere
-    const light2 = new THREE.PointLight(0xffffff, 100, 100);
-    light2.position.set(0, 8, 0);
-    light2.castShadow = true; // Light casts a shadow
-    scene.add(light2);
-    light2.shadow.mapSize.width = 512; // default
-    light2.shadow.mapSize.height = 512; // default
-    light2.shadow.camera.near = 0.5; // default
-    light2.shadow.camera.far = 500; // default
+    function placeObject(location, path) {
+      gltfloader.load(path, (gltf) => {
+        const model = gltf.scene;
+        model.scale.set(10, 10, 10);
+
+        const bbox = new THREE.Box3().setFromObject(model);
+        let size = new THREE.Vector3();
+        bbox.getSize(size);
+
+        var pos = cubeGroup.position;
+        var rot = cubeGroup.rotation;
+        var xpos = pos.x - planeSize / 4;
+        var ypos = pos.y - planeSize / 2;
+        var zpos = pos.z - planeSize / 2;
+        
+
+        pos.x += size.x / 2;
+        pos.y += size.y / 2;
+        pos.z += size.z / 2;
+
+        model.position.set(xpos, ypos, zpos);
+        model.rotation.set(rot.x, rot.y, rot.z);
+        model.rotateZ(-Math.PI / 2);
+
+        scene.add(model);
+      });
+    }
+
+    placeObject(Location.rightWall, "./bed.glb");
+    placeObject(Location.leftWall, "./somethingIkea.glb");
+    placeObject(Location.corner, "./somethingIkea.glb");
 
     // Animation loop
     const animate = () => {
       requestAnimationFrame(animate);
       stats.update();
+      controls.update();
       renderer.render(scene, camera);
     };
     animate();
