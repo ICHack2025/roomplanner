@@ -120,10 +120,10 @@ const ThreeScene = ({ modelsStuff }) => {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Optional for softer shadows
 
     // Orbit  Control
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.enableRotate = true;
-    controls.enableZoom = false;
+    // const controls = new OrbitControls(camera, renderer.domElement);
+    // controls.enableDamping = true;
+    // controls.enableRotate = true;
+    // controls.enableZoom = false;
 
     const stats = new Stats();
     containerRef.current.appendChild(stats.dom);

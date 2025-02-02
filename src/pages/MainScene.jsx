@@ -1,18 +1,10 @@
 import React, { useState } from "react";
 import ThreeScene from "./ThreeScene";
+import "../style/index.scss";
 
 const MainScene = () => {
   const [messages, setMessages] = useState([]);
-  const [models, setModels] = useState({
-    "chair": [
-        " right",
-        "90503285_PS01_S01_NV01_RQP3_3.0_4f3c38313d63daded1667b4466e0c0ec.glb"
-    ],
-    "desk": [
-        " corner",
-        "80354276_PS01_S01_NV01_RQP3_3.0_0f6194297ea644d59a905d19e949764c.glb"
-    ]
-});
+  const [models, setModels] = useState({});
   const [input, setInput] = useState("");
 
   // Function to handle sending a message
@@ -29,7 +21,7 @@ const MainScene = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({ message: input }),
       });
@@ -41,7 +33,10 @@ const MainScene = () => {
         const botMessage = { sender: "bot", text: data.reply };
         setMessages((prevMessages) => [...prevMessages, botMessage]);
       } else {
-        const errorMessage = { sender: "bot", text: "Error: Unable to get a response." };
+        const errorMessage = {
+          sender: "bot",
+          text: "Error: Unable to get a response.",
+        };
         setMessages((prevMessages) => [...prevMessages, errorMessage]);
       }
     } catch (error) {
@@ -60,7 +55,7 @@ const MainScene = () => {
     >
       {/* 3D Scene Section */}
       <div style={{ flex: 3, borderRight: "1px solid #ddd" }}>
-        <ThreeScene modelsStuff={models}/>
+        <ThreeScene modelsStuff={models} />
       </div>
 
       {/* Sidebar Section */}
@@ -72,13 +67,24 @@ const MainScene = () => {
           padding: "10px",
         }}
       >
-        <h1 className="title">Chat Bot</h1>
+        <h1
+          className="title"
+          style={{
+            fontFamily: "Inter",
+            fontSize: "4rem",
+            marginTop: "14px",
+            paddingBottom: "14px",
+            borderBottom: "1px solid black",
+            marginBottom: "40px",
+          }}
+        >
+          Chat Bot
+        </h1>
         <div
           className="chat-box"
           style={{
             flex: 1,
             overflowY: "scroll",
-            border: "1px solid #ddd",
             padding: "10px",
             marginBottom: "10px",
           }}
@@ -96,7 +102,8 @@ const MainScene = () => {
                   display: "inline-block",
                   padding: "8px 12px",
                   borderRadius: "12px",
-                  background: message.sender === "user" ? "#f9f9f3ff" : "#ffffff",
+                  background:
+                    message.sender === "user" ? "#f9f9f3ff" : "#ffffff",
                   color: message.sender === "user" ? "black" : "black",
                 }}
               >
@@ -105,8 +112,11 @@ const MainScene = () => {
             </div>
           ))}
         </div>
-        <div className="field has-addons">
-          <div className="control" style={{ flex: 1 }}>
+        <div
+          className="field has-addons"
+          style={{ display: "flex", alignItems: "center", justifyContent: "center", margin: "30px" }}
+        >
+          <div className="control" style={{ flex: 1, marginBottom: 0 }}>
             <input
               className="input"
               type="text"
@@ -116,10 +126,29 @@ const MainScene = () => {
               onKeyPress={(e) => {
                 if (e.key === "Enter") handleSend();
               }}
+              style={{
+                borderRadius: "0", // Rounded left corners
+                padding: "0.8rem 1rem",
+                fontSize: "1rem",
+                border: "1px solid #ccc",
+                borderRight: "none", // Remove right border to visually connect to the button
+                transition: "border-color 0.3s ease",
+                width: "100%", // Make input take all available space
+              }}
             />
           </div>
           <div className="control">
-            <button className="button is-primary" onClick={handleSend}>
+            <button
+              className=""
+              style={{
+                marginTop: "0", // Remove top margin to align with input
+                marginBottom: "0", // Remove bottom margin to align with input
+                padding: "0.8rem 1.5rem",
+                fontSize: "1rem",
+                border: "1px solid #ccc", // Same border style as the input
+              }}
+              onClick={handleSend}
+            >
               Send
             </button>
           </div>

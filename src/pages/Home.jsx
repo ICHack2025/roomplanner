@@ -1,9 +1,11 @@
+import { useRef } from "react";
 import "./../style/home.scss";
 
 const Home = () => {
+
   const handleFileChange = (event) => {
     window.location.href = "/create_points";
-  }
+  };
   return (
     <>
       <div className="home-styling">
@@ -12,7 +14,15 @@ const Home = () => {
             <div className="container is-flex is-align-items-center is-justify-content-center">
               <div className="columns">
                 <div className="column is-flex is-align-items-center is-justify-content-center">
-                  <div className="content pl-3 is-flex  is-align-items-center is-justify-content-center is-flex-direction-column">
+                  <div
+                    id="skibidi"
+                    className="content pl-3 is-flex  is-align-items-center is-justify-content-center is-flex-direction-column"
+                    style={{
+                      maxWidth: "50%",
+                      margin: "auto",
+                      padding: "2rem",
+                    }}
+                  >
                     <h1
                       style={{
                         fontSize: "10em",
@@ -27,8 +37,18 @@ const Home = () => {
                       assistant.
                     </p>
                     {/* upload button */}
-                    <input type="file" accept="image/" onChange={handleFileChange}/>
-                    
+                    <button onClick={() => document.getElementById("fileInput").click()}>
+        Scan my Room
+      </button>
+
+      {/* Hidden file input */}
+      <input
+        type="file"
+        id="fileInput"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={handleFileChange}
+      />
                   </div>
                 </div>
               </div>

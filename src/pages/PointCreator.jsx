@@ -120,12 +120,21 @@ const PointCreator = () => {
           height: "auto",
           display: "flex",
           justifyContent: "center",
-          padding: "3rem",
-          color: "white",
-          backgroundColor: "black",
+          color: "#000",
         }}
       >
-        <h1>{getStageString(stage)}</h1>
+        <h1
+          style={{
+            fontFamily: "Inter",
+            fontSize: "2.8rem",
+            color: "black",
+            padding: "1.23rem",
+            paddingTop: "10px",
+            zIndex: 101,
+          }}
+        >
+          {getStageString(stage)}
+        </h1>
       </div>
 
       {/* Canvas for drawing lines */}
@@ -138,6 +147,32 @@ const PointCreator = () => {
           pointerEvents: "none", // Prevent canvas from blocking clicks
         }}
       />
+      <div
+        style={{
+          zIndex: 100,
+          position: "absolute",
+          top: "0px",
+          left: "0px",
+          bottom: "0px",
+          right: "0px",
+          border: "20px solid white" /* Thick white border */,
+          borderTop: "72px solid white" /* Thin black border */,
+          pointerEvents: "none",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: "0px" /* Adjust top to fit within the outer border */,
+            left: "0px" /* Adjust left to fit within the outer border */,
+            bottom: "0px" /* Adjust bottom to fit within the outer border */,
+            right: "0px" /* Adjust right to fit within the outer border */,
+            border: "2px solid black" /* Inner border */,
+            boxSizing:
+              "border-box" /* Ensures the inner border is inside the outer border */,
+          }}
+        />
+      </div>
 
       {/* Render circles for the axis point and placed points */}
       {axisPoint && (
