@@ -1,10 +1,7 @@
 import ikea_api
 import requests
 import os
-import base64
 import zipfile
-import cv2
-import numpy
 from colorthief import ColorThief
 import shutil
 from math import sqrt
@@ -14,7 +11,7 @@ from math import sqrt
 constants = ikea_api.Constants(country="gb", language="en")
 ikea_api.Auth(constants).get_guest_token()
 
-
+ 
 # MAIN
 
 def find_model(item_code, hex_list):
