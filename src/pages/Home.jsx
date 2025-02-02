@@ -12,7 +12,7 @@ const Home = () => {
                   <div className="content pl-3 is-flex  is-align-items-center is-justify-content-center is-flex-direction-column">
                     <h1
                       style={{
-                        fontSize: "6em",
+                        fontSize: "10em",
                         fontWeight: "bold",
                         color: "black",
                       }}
@@ -46,7 +46,7 @@ const Home = () => {
           width: "100vw",
           height: "100vh",
           objectFit: "cover",
-          opacity: 0.2,
+          opacity: 0.05,
           zIndex: 0,
           pointerEvents: "none",
         }}
